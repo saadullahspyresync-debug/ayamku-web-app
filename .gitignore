@@ -1,18 +1,91 @@
-# dependencies
-node_modules
+# ============================
+# 🌐 SST v3 / Serverless
+# ============================
 
-# sst
-.sst
+# SST build and deployment artifacts
+.sst/
+.open-next/
+sst-env.d.ts
+sst.config.tsbuildinfo
 
-# tmp files
+# AWS SAM / CDK / CloudFormation outputs
+.cdk.out/
+cdk.out/
+.cloudformation/
+.template.json
+
+# Lambda build outputs
+dist/
+.build/
+.out/
+.temp/
+tmp/
+.cache/
+
+# =================================
+# 🧩 Node / TypeScript / Vite
+# =================================
+
+# Dependencies
+node_modules/
+
+# TypeScript build outputs
+*.tsbuildinfo
+
+# Vite / Next / React builds
+.next/
+.vite/
+build/
+out/
+coverage/
+
+# =================================
+# ⚙️ Environment & Local Configs
+# =================================
+
+.env
+.env*.local
+.env.*.backup
+.envrc
+.sst-env.local.json
+.aws/
+.aws-sso/
+
+# =================================
+# 🧪 Testing / Logs / Debug
+# =================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Jest / Vitest
+coverage/
+*.lcov
+
+# =================================
+# 💻 OS / Editor / Misc
+# =================================
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
 .#*
 
-# env 
-.env*.local
-.env
+# =================================
+# 🧰 Misc Tools
+# =================================
 
-# opennext
-.open-next
-
-# misc
-.DS_Store
+# Local serverless-offline caches
+.serverless/
+.localstack/
+.terraform/

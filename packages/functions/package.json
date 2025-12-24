@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.910.0",
+    "@aws-sdk/client-ses": "^3.934.0",
+    "@aws-sdk/lib-dynamodb": "^3.910.0",
     "@monorepo-template/core": "*",
-    "sst": "*"
+    "jsonwebtoken": "^9.0.2",
+    "sst": "*",
+    "uuid": "^8.0.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8"
+    "@types/aws-lambda": "^8.10.155",
+    "@types/uuid": "^10.0.0"
   }
 }

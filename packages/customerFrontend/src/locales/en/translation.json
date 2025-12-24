@@ -1,0 +1,183 @@
+{
+  "welcome": "Welcome to Ayamku!",
+  "menu": "Menu",
+  "branches": "Branches",
+  "order_now": "Order Now",
+  "language": "Language",
+  "contact_us": "Contact Us",
+  "login": "Login",
+  "logout": "Logout",
+  "select_branch": "Select Branch",
+  "find_food": "Find your favorite food",
+  "restaurant_locator": "Restaurant Locator",
+  "user": "User",
+  "footer": {
+    "description": "Ayamku Food delivers bold flavors and local favorites to satisfy every craving.",
+    "rights": "© 2025 Ayamku. All Rights Reserved.",
+    "quick_links": "Quick Links",
+    "explore_menu": "Explore Menu",
+    "restaurant_locator": "Restaurant Locator",
+    "contact_us": "Contact Us",
+    "about_us": "About Us",
+    "contact": "Contact",
+    "address_line1": "1055 Arthur ave Elk Groot, 67.",
+    "address_line2": "New Palmas South Carolina.",
+    "phone": "+1 234 678 9108 99",
+    "email": "Contact@moralizer.com"
+  },
+  "deliveryModal": {
+    "delivery": "Delivery",
+    "online": "Online",
+    "delivery_service": "Delivery Service",
+    "delivery_desc": "We'll deliver your order to your location",
+    "continue_delivery": "Continue with Delivery",
+    "pickup_location": "Pickup Location",
+    "city_region": "City / Region",
+    "enter_city": "Enter city or region",
+    "current": "Current",
+    "select_branch": "Select Branch",
+    "choose_branch": "Choose a branch",
+    "select": "Select",
+    "no_branches": "No branches found"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "empty_subtext": "Add items to get started",
+    "total": "Total",
+    "place_order": "Place Order",
+    "login_to_order": "Login to Order",
+    "order_success": "Order placed successfully!",
+    "order_failed": "Something went wrong while placing the order",
+    "addItems": "Add some delicious items to get started",
+    "browseMenu": "Browse Menu",
+    "suggestedTitle": "Did You Leave Anything Behind?",
+    "totalTitle": "Total",
+    "discount": "Discount",
+    "duePayment": "Due Payment",
+    "placeOrder": "Place Order",
+    "empty_title": "Your cart is empty",
+    "empty_subtext_cart": "Go ahead and explore top categories"
+  },
+  "branch_selector": {
+    "friday_notice": "We are not serving on Friday between",
+    "branch_name": "Branch Name",
+    "timing": "Timing (Mon–Sun)",
+    "no_branches": "No branches found",
+    "select": "Select",
+    "status": "Status",
+    "closed": "Closed",
+    "open": "Open"
+  },
+  "about_us": {
+    "title": "About Us",
+    "intro1": "At Ayamku Food, we believe food isn’t just about flavor — it’s about feeling at home. Born right here in Brunei, Ayamku started with one mission: to serve crispy, juicy, flavorful chicken that brings people together. From humble beginnings, we’ve grown into a beloved local favorite, known for quality ingredients, bold flavors, and warm service.",
+    "intro2": "We take pride in blending traditional tastes with modern convenience, offering meals that satisfy every craving — from quick snacks to hearty family feasts.",
+    "difference_title": "What Makes Us Different",
+    "locally_inspired": {
+      "title": "Locally Inspired",
+      "text": "Our recipes are crafted with a Bruneian touch and a love for homegrown flavor."
+    },
+    "fresh_fast": {
+      "title": "Fresh & Fast",
+      "text": "Every order is prepared fresh and served fast, whether you’re dining in or ordering online."
+    },
+    "always_evolving": {
+      "title": "Always Evolving",
+      "text": "We constantly introduce new dishes, promotions, and seasonal specials to keep things exciting."
+    },
+    "mission_title": "Our Mission",
+    "mission_text": "To serve food that’s flavorful, affordable, and full of heart, while staying connected to our roots and community.",
+    "vision_title": "Our Vision",
+    "vision_text": "To become Brunei’s most trusted name in fast-casual dining — known for exceptional taste, authentic service, and a strong community connection."
+  },
+  "contact": {
+    "title": "Let's talk with us",
+    "subtitle": "Questions, comments, or suggestions? Simply fill in the form and we'll be in touch shortly.",
+    "address": {
+      "line1": "1055 Arthur ave Elk Groot, 67.",
+      "line2": "New Palmas South Carolina."
+    },
+    "phone": "+1 234 678 9108 99",
+    "email": "Contact@moralizer.com",
+    "map": {
+      "title": "Interactive Map",
+      "subtitle": "Map integration will be added here"
+    },
+    "form": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "selectSubject": "Select Subject",
+      "feedback": "Feedback",
+      "complaint": "Complaint",
+      "inquiry": "Inquiry",
+      "message": "Your message",
+      "submit": "Send Message"
+    },
+    "messageSent": "Message sent successfully!"
+  },
+  "hero": {
+    "title": "I'm lovin it!",
+    "slogan": "The most flavorful chicken in Brunei",
+    "solgan_subtext": "Food & Restaurants",
+    "button_order": "Order Now",
+    "button_view_menu": "View Menu",
+    "title_menu": "Our Menu",
+    "subtitle": "Discover our delicious offerings"
+  },
+  "why_choose": {
+    "title": "Why Choose Ayamku Food?",
+    "description": "We are dedicated to providing you with the best food delivery experience",
+    "services": {
+      "easy_to_order": {
+        "title": "Easy To Order",
+        "description": "You only need a few steps in ordering food"
+      },
+      "fastest_delivery": {
+        "title": "Fastest Delivery",
+        "description": "Delivery that is always on time, even faster"
+      },
+      "best_quality": {
+        "title": "Best Quality",
+        "description": "Not only fast for us, quality is also number one"
+      }
+    }
+  },
+  "explore_menu": {
+    "title": "Explore Menu",
+    "description": "Choose from our delicious menu categories",
+    "view_all": "View All",
+    "no_categories": "No categories found for this branch."
+  },
+  "best_food": {
+    "title": "Our Best Food",
+    "description": "Popular dishes loved by our customers",
+    "no_items": "No items found for this branch.",
+    "points": "Points"
+  },
+  "promotions": {
+    "title": "Current Promotions",
+    "special_offer_1": {
+      "title": "SPECIAL OFFER 1",
+      "description": "Get up to 50% on this deal",
+      "button": "Order Now"
+    },
+    "special_offer_2": {
+      "title": "SPECIAL OFFER 2",
+      "description": "Buy 2 Get 1 Free on all burgers",
+      "button": "Order Now"
+    }
+  },
+  "categories": {
+    "all": "All",
+    "deals": "Deals",
+    "no_categories": "No categories available"
+  },
+  "items": {
+    "loading": "Loading items...",
+    "no_items": "No items for {{category}} right now",
+    "deal_badge": "Deal"
+  }
+}

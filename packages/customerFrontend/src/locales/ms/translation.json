@@ -1,0 +1,183 @@
+{
+  "welcome": "Selamat Datang ke Ayamku!",
+  "menu": "Menu",
+  "branches": "Cawangan",
+  "order_now": "Pesan Sekarang",
+  "language": "Bahasa",
+  "contact_us": "Hubungi Kami",
+  "login": "Log Masuk",
+  "logout": "Log Keluar",
+  "select_branch": "Pilih Cawangan",
+  "find_food": "Cari makanan kegemaran anda",
+  "restaurant_locator": "Lokasi Restoran",
+  "user": "Pengguna",
+  "footer": {
+    "description": "Ayamku Food menyajikan rasa yang hebat dan kegemaran tempatan untuk memuaskan setiap selera.",
+    "rights": "© 2025 Ayamku. Hak Cipta Terpelihara.",
+    "quick_links": "Pautan Pantas",
+    "explore_menu": "Terokai Menu",
+    "restaurant_locator": "Lokasi Restoran",
+    "contact_us": "Hubungi Kami",
+    "about_us": "Tentang Kami",
+    "contact": "Hubungan",
+    "address_line1": "1055 Arthur ave Elk Groot, 67.",
+    "address_line2": "New Palmas South Carolina.",
+    "phone": "+1 234 678 9108 99",
+    "email": "Contact@moralizer.com"
+  },
+  "deliveryModal": {
+    "delivery": "Penghantaran",
+    "online": "Dalam talian",
+    "delivery_service": "Perkhidmatan Penghantaran",
+    "delivery_desc": "Kami akan menghantar pesanan anda ke lokasi anda",
+    "continue_delivery": "Teruskan dengan Penghantaran",
+    "pickup_location": "Lokasi Ambil Sendiri",
+    "city_region": "Bandar / Kawasan",
+    "enter_city": "Masukkan bandar atau kawasan",
+    "current": "Semasa",
+    "select_branch": "Pilih Cawangan",
+    "choose_branch": "Pilih satu cawangan",
+    "select": "Pilih",
+    "no_branches": "Tiada cawangan ditemui"
+  },
+  "cart": {
+    "title": "Troli",
+    "empty": "Troli anda kosong",
+    "empty_subtext": "Tambah item untuk mula membeli",
+    "total": "Jumlah",
+    "place_order": "Buat Pesanan",
+    "login_to_order": "Log masuk untuk membuat pesanan",
+    "order_success": "Pesanan berjaya dibuat!",
+    "order_failed": "Ralat berlaku semasa membuat pesanan",
+    "addItems": "Tambah hidangan lazat untuk bermula",
+    "browseMenu": "Lihat Menu",
+    "suggestedTitle": "Tertinggal sesuatu?",
+    "totalTitle": "Jumlah",
+    "discount": "Diskaun",
+    "duePayment": "Jumlah Perlu Dibayar",
+    "placeOrder": "Buat Pesanan",
+    "empty_title": "Troli anda kosong",
+    "empty_subtext_cart": "Teruskan dan terokai kategori terbaik"
+  },
+  "branch_selector": {
+    "friday_notice": "Kami tidak berkhidmat pada hari Jumaat antara",
+    "branch_name": "Nama Cawangan",
+    "timing": "Waktu Operasi (Isn–Aha)",
+    "no_branches": "Tiada cawangan dijumpai",
+    "select": "Pilih",
+    "status": "Status",
+    "closed": "Tertutup",
+    "open": "Buka"
+  },
+  "about_us": {
+    "title": "Tentang Kami",
+    "intro1": "Di Ayamku Food, kami percaya makanan bukan sekadar rasa — ia tentang rasa seperti di rumah. Dilahirkan di Brunei, Ayamku bermula dengan satu misi: menyajikan ayam rangup, berjus dan penuh rasa yang menyatukan orang ramai.",
+    "intro2": "Kami berbangga menggabungkan cita rasa tradisional dengan kemudahan moden, menawarkan hidangan yang memuaskan setiap selera — dari snek ringan hingga hidangan keluarga yang mengenyangkan.",
+    "difference_title": "Apa Yang Menjadikan Kami Berbeza",
+    "locally_inspired": {
+      "title": "Berinspirasi Tempatan",
+      "text": "Resepi kami direka dengan sentuhan Brunei dan kasih terhadap rasa tempatan."
+    },
+    "fresh_fast": {
+      "title": "Segar & Pantas",
+      "text": "Setiap pesanan disediakan segar dan dihantar dengan pantas, sama ada anda makan di restoran atau secara dalam talian."
+    },
+    "always_evolving": {
+      "title": "Sentiasa Berkembang",
+      "text": "Kami sentiasa memperkenalkan hidangan, promosi, dan tawaran bermusim yang baharu untuk memastikan pengalaman sentiasa menarik."
+    },
+    "mission_title": "Misi Kami",
+    "mission_text": "Menyajikan makanan yang penuh rasa, berpatutan dan ikhlas, sambil kekal dekat dengan akar dan komuniti kami.",
+    "vision_title": "Visi Kami",
+    "vision_text": "Menjadi jenama paling dipercayai di Brunei dalam hidangan segera — dikenali kerana rasa luar biasa, layanan tulus dan hubungan komuniti yang kukuh."
+  },
+  "contact": {
+    "title": "Mari berbual dengan kami",
+    "subtitle": "Ada soalan, komen, atau cadangan? Isikan borang dan kami akan hubungi anda secepat mungkin.",
+    "address": {
+      "line1": "1055 Arthur ave Elk Groot, 67.",
+      "line2": "New Palmas South Carolina."
+    },
+    "phone": "+1 234 678 9108 99",
+    "email": "Contact@moralizer.com",
+    "map": {
+      "title": "Peta Interaktif",
+      "subtitle": "Integrasi peta akan ditambah di sini"
+    },
+    "form": {
+      "firstName": "Nama Pertama",
+      "lastName": "Nama Akhir",
+      "email": "E-mel",
+      "phone": "Nombor Telefon",
+      "selectSubject": "Pilih Subjek",
+      "feedback": "Maklum Balas",
+      "complaint": "Aduan",
+      "inquiry": "Pertanyaan",
+      "message": "Mesej anda",
+      "submit": "Hantar Mesej"
+    },
+    "messageSent": "Mesej berjaya dihantar!"
+  },
+  "hero": {
+    "title": "Saya sukakannya!",
+    "slogan": "Ayam paling sedap di Brunei",
+    "solgan_subtext": "Makanan & Restoran",
+    "button_order": "Pesan Sekarang",
+    "button_view_menu": "Lihat Menu",
+    "title_menu": "Menu Kami",
+    "subtitle": "Temui hidangan lazat kami"
+  },
+  "why_choose": {
+    "title": "Mengapa Pilih Ayamku Food?",
+    "description": "Kami berdedikasi untuk memberikan pengalaman penghantaran makanan terbaik",
+    "services": {
+      "easy_to_order": {
+        "title": "Mudah Untuk Pesan",
+        "description": "Hanya beberapa langkah untuk memesan makanan"
+      },
+      "fastest_delivery": {
+        "title": "Penghantaran Pantas",
+        "description": "Penghantaran sentiasa tepat pada masanya, malah lebih pantas"
+      },
+      "best_quality": {
+        "title": "Kualiti Terbaik",
+        "description": "Bukan sahaja pantas, kualiti juga nombor satu"
+      }
+    }
+  },
+  "explore_menu": {
+    "title": "Teroka Menu",
+    "description": "Pilih daripada kategori menu kami yang lazat",
+    "view_all": "Lihat Semua",
+    "no_categories": "Tiada kategori ditemui untuk cawangan ini."
+  },
+  "best_food": {
+    "title": "Makanan Terbaik Kami",
+    "description": "Hidangan popular yang disukai pelanggan kami",
+    "no_items": "Tiada item ditemui untuk cawangan ini.",
+    "points": "mata"
+  },
+  "promotions": {
+    "title": "Semasa Promosi",
+    "special_offer_1": {
+      "title": "TAWARAN ISTIMEWA 1",
+      "description": "Dapatkan diskaun sehingga 50% pada tawaran ini",
+      "button": "Pesan Sekarang"
+    },
+    "special_offer_2": {
+      "title": "TAWARAN ISTIMEWA 2",
+      "description": "Beli 2 Percuma 1 untuk semua burger",
+      "button": "Pesan Sekarang"
+    }
+  },
+  "categories": {
+    "all": "Semua",
+    "deals": "Tawaran",
+    "no_categories": "Tiada kategori tersedia"
+  },
+  "items": {
+    "loading": "Memuatkan item...",
+    "no_items": "Tiada item untuk {{category}} buat masa ini",
+    "deal_badge": "Tawaran"
+  }
+}
