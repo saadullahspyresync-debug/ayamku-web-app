@@ -11,10 +11,13 @@ import ProfileBadge from "../components/ProfileBadge";
 import ProfilePage from "./ProfilePage";
 import PointsTab from "./tabs/PointsTab";
 import OrdersTab from "./tabs/OrdersTab";
+import BranchManagerTab from "./tabs/BranchManager";
 import { ContactMessages } from "./tabs/ContactMessages";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState(user?.role === "Admin" ? "overview" : "branches");
 
   // ✅ Renders the correct tab
   const renderTab = () => {
@@ -23,6 +26,8 @@ export default function Dashboard() {
         return <OverviewTab />;
       case "branches":
         return <BranchesTab />;
+      case "branch manager":
+        return <BranchManagerTab />;
       case "menu":
         return <MenuTab />;
       case "promotions":

@@ -55,9 +55,10 @@ const PromotionsSlider: React.FC = () => {
     );
 
   const handleOrderNow = () => {
-    navigate("/menu", {
-      state: { category: "Promotion" },
-    });
+    // navigate("/menu", {
+    //   state: { category: "Promotion" },
+    // });
+    navigate("/menu?category=Promotion");
   };
 
   return (

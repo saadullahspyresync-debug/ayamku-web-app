@@ -4,6 +4,7 @@ import * as pulumi from "@pulumi/pulumi"; // <--- 1. Import the Pulumi SDK
 export const userGroups = new sst.Linkable("UserGroups", {
   properties: {
     Admin: "Admin",
+    Branch_Manager: "Branch_Manager",
     Customer: "Customer",
   },
 });
@@ -52,9 +53,6 @@ export const userPool = new sst.aws.CognitoUserPool("UserPool", {
 });
 
 // ✅ Create user groups dynamically
-
-console.log(userPool,'User pool......');
-
 Object.keys(userGroups.properties).forEach((role) => {  
   new aws.cognito.UserGroup(`${role}Group`, {
     userPoolId: userPool.id,
@@ -82,3 +80,10 @@ export const userPoolClient = userPool.addClient("UserPoolClient", {
     },
   },
 });
+
+export const AuthResources = {
+  userPool,
+  userPoolClient,
+  userGroups,
+};
+

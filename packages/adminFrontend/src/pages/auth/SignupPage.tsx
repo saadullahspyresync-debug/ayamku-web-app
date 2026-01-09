@@ -27,7 +27,7 @@ export default function SignupPage() {
     }
 
     try {
-      const result = await signup(form.email, form.password, form.fullName, "Admin");   1  // for admin signup  
+      const result = await signup(form.email, form.password, form.fullName);   1  // for admin signup  
       if (result?.nextStep?.signUpStep === "CONFIRM_SIGN_UP") {
         setStep("verify");
         setMessage("Verification code sent! Check your email.");

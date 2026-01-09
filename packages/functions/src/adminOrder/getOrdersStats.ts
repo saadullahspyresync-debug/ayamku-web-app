@@ -1,67 +1,121 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, ScanCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { APIGatewayProxyEvent } from "aws-lambda";
 import { Resource } from "sst";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const TABLE = Resource.Order.name;
+const ORDERS_TABLE = Resource.Order.name;
 
-export const main: APIGatewayProxyHandler = async () => {
+const response = (status: number, body: any) => ({
+  statusCode: status,
+  body: JSON.stringify(body),
+});
+
+export const main = async (event: APIGatewayProxyEvent) => {
   try {
-    const result = await dynamoDb.send(
+    const auth = event.requestContext.authorizer?.lambda;
+    if (!auth) {
+      return response(401, { message: "Unauthorized" });
+    }
+
+    const { userId, userRole } = auth;
+    const branchId = event?.queryStringParameters?.branchId;
+
+    let filterExpression: string | undefined;
+    let expressionValues: Record<string, any> | undefined;
+
+    /* ================= BRANCH RESTRICTION ================= */
+    let enforcedBranchId: string | null = null;
+
+    if (userRole === "Branch_Manager") {
+      // 🔒 get assigned branchId
+      const bm = await dynamoDb.send(
+        new QueryCommand({
+          TableName: Resource.BranchManager.name,
+          IndexName: "userIndex", // 👈 GSI
+          KeyConditionExpression: "userId = :uid",
+          ExpressionAttributeValues: {
+            ":uid": userId,
+          },
+          Limit: 1,
+        })
+      );
+
+      const item = bm.Items?.[0];
+      enforcedBranchId = item?.branchId;
+
+      if (!enforcedBranchId) {
+        return response(403, "Branch not assigned");
+      }
+    }
+
+    // 🔒 Branch Manager → FORCE their branch
+    if (userRole === "Branch_Manager") {
+      filterExpression = "branchId = :branchId";
+      expressionValues = { ":branchId": enforcedBranchId };
+    }
+
+    // 🧠 Admin → filter only when branch selected
+    if (userRole === "Admin" && branchId && branchId !== "all") {
+      filterExpression = "branchId = :branchId";
+      expressionValues = { ":branchId": branchId };
+    }
+    
+
+    const scanResult = await dynamoDb.send(
       new ScanCommand({
-        TableName: TABLE,
+        TableName: ORDERS_TABLE,
+        ...(filterExpression && {
+          FilterExpression: filterExpression,
+          ExpressionAttributeValues: expressionValues,
+        }),
       })
     );
-    const orders = result.Items || [];
 
+    const orders = scanResult.Items || [];
+
+    // 📊 Compute stats safely
     let totalOrders = 0;
-    let totalRevenue = 0;
     let pendingOrders = 0;
     let completedOrders = 0;
     let cancelledOrders = 0;
+    let totalRevenue = 0;
 
-    orders.forEach((order: any) => {
-      totalOrders += 1;
+    for (const order of orders) {
+      totalOrders++;
 
-      // Safely unwrap DynamoDB attribute types
-      const totalPrice =
-        Number(order.totalPrice?.N) || Number(order.totalPrice) || 0;
-      const status = order.status?.S || order.status || "unknown";
+      const status = order.status?.toLowerCase?.() || "unknown";
 
-      totalRevenue += totalPrice;
+      // ✅ SAFELY EXTRACT PRICE
+      const price =
+        Number(order.totalPrice) ||
+        Number(order.totalAmount) ||
+        Number(order.totalPrice?.N) ||
+        0;
 
-      switch (status.toLowerCase()) {
-        case "pending":
-          pendingOrders += 1;
-          break;
-        case "completed":
-          completedOrders += 1;
-          break;
-        case "cancelled":
-          cancelledOrders += 1;
-          break;
+      if (status === "completed") {
+        completedOrders++;
+        totalRevenue += price;
+      } else if (status === "pending") {
+        pendingOrders++;
+      } else if (status === "cancelled") {
+        cancelledOrders++;
       }
-    });
+    }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        totalOrders,
-        pendingOrders,
-        completedOrders,
-        cancelledOrders,
-        totalRevenue,
-      }),
-    };
-  } catch (err) {
-    console.error("Error fetching order stats:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Failed to fetch order stats",
-        error: err instanceof Error ? err.message : err,
-      }),
-    };
+    const averageRevenue =
+      completedOrders > 0 ? totalRevenue / completedOrders : 0;
+
+    return response(200, {
+      totalOrders,
+      pendingOrders,
+      completedOrders,
+      cancelledOrders,
+      totalRevenue,
+      averageRevenue,
+    });
+  } catch (error) {
+    console.error("Stats error:", error);
+    return response(500, { message: "Failed to fetch stats" });
   }
 };

@@ -1,11 +1,13 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import LoginPage from "./pages/auth/LoginPage";
-import SignupPage from "./pages/auth/SignupPage";
+// import SignupPage from "./pages/auth/SignupPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProfilePage from "./pages/ProfilePage";
+import SetNewPassword from "./pages/SetNewPassword";
+import Unauthorized from "./pages/Unauthorized";
 
-function PrivateRoute({ children, role } : { children: React.ReactNode, role?: string }) {
+function PrivateRoute({ children, role } : { children: React.ReactNode, role?: Array<"Admin" | "Branch_Manager" | "Customer"> }) {
   const { isAuthenticated, user, isLoading: loading } = useAuth();
 
   if (loading) {
@@ -19,9 +21,9 @@ function PrivateRoute({ children, role } : { children: React.ReactNode, role?: s
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
-  
-  if (role && user.role !== role) {
-    return <Navigate to={`/admin-dashboard`} replace />;
+
+  if (role && !role.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
   }
   
   return children;
@@ -56,18 +58,18 @@ function App() {
           </PublicRoute>
         } 
       />
-      <Route 
+      {/* <Route 
         path="/signup" 
         element={
           <PublicRoute>
             <SignupPage />
           </PublicRoute>
         } 
-      />
+      /> */}
       <Route 
         path="/admin-dashboard/*" 
         element={
-          <PrivateRoute role="Admin">
+          <PrivateRoute role={["Admin", "Branch_Manager"]}>
             <AdminDashboard />
           </PrivateRoute>
         } 
@@ -80,6 +82,9 @@ function App() {
           </PrivateRoute>
         } 
       />
+      <Route path="/set-new-password" element={<SetNewPassword />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

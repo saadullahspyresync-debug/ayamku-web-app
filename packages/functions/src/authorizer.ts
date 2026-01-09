@@ -227,7 +227,7 @@ import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { Resource } from "sst";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -240,7 +240,7 @@ const verifier = CognitoJwtVerifier.create({
   tokenUse: "access",
 });
 
-console.log("Verifier:", verifier);
+// console.log("Verifier:", verifier);
 
 // Define role-based permissions
 const rolePermissions = {
@@ -260,6 +260,11 @@ const rolePermissions = {
     { path: "/highlights/{id}", methods: ["GET", "PUT", "DELETE", "PATCH"] },
     { path: "/sliders", methods: ["GET", "POST"] },
     { path: "/sliders/{id}", methods: ["GET", "PUT", "DELETE", "PATCH"] },
+
+    // Branch Manager
+    {path: "/branch_manager", methods: ["GET", "POST"]},
+    {path: "/branch_manager/status/{email}", methods: ["GET", "PUT", "DELETE", "PATCH"]},
+    {path: "/branch_manager/delete/{id}", methods: ["DELETE"]},
 
     // Order Management
     { path: "/admin/orders", methods: ["GET"] },
@@ -283,6 +288,24 @@ const rolePermissions = {
     // ===== Points Transactions (Admin) =====
     { path: "/admin/points/transactions", methods: ["GET"] },
     { path: "/admin/points/adjust", methods: ["POST"] },
+  ],
+  [Resource.UserGroups.Branch_Manager]: [
+    // ===== Order Management =====
+    { path: "/admin/orders", methods: ["GET"] },
+    { path: "/admin/orders-stats", methods: ["GET"] },
+    { path: "/admin/orders/{id}", methods: ["GET", "PUT"] },
+    { path: "/admin/orders/{id}/status", methods: ["PATCH"] },
+
+    // ===== Redemption Analytics (Branch Manager) =====
+    { path: "/admin/redemptions/stats", methods: ["GET"] },
+    { path: "/admin/redemptions", methods: ["GET"] },
+    { path: "/admin/redemptions/item/{redeemableId}", methods: ["GET"] },
+
+    // ===== Branch Edit =====
+    { path: "/branch", methods: ["GET", "POST"] },
+
+    // ====== auth me ======
+    { path: "/auth/me", methods: ["GET"] },
   ],
   [Resource.UserGroups.Customer]: [
     { path: "/admin/points/config", methods: ["GET"] },
@@ -319,20 +342,15 @@ export const main = async (event: any): Promise<any> => {
   console.log("🚀 AUTHORIZER INVOKED");
 
   try {
-    const authHeader =
-      event.headers?.authorization || event.headers?.Authorization;
+    const authHeader = event.headers?.authorization || event.headers?.Authorization;
     if (!authHeader) throw new Error("No Auth header");
-    console.log("🔹 Auth Header found");
 
     const token = authHeader.replace("Bearer ", "");
     if (!token) throw new Error("No token provided");
-    console.log("🔹 Token extracted");
 
     let payload;
     let retries = 0;
     const maxRetries = 3;
-
-    console.log("🔹 Verifying token...",token);
 
     while (retries < maxRetries) {
       try {
@@ -358,8 +376,20 @@ export const main = async (event: any): Promise<any> => {
 
     if (!payload) throw new Error("Invalid token");
 
-    const userRole = (payload["cognito:groups"] || [])[0] || "Guest";
+    // const userRole = (payload["cognito:groups"] || [])[0] || "Guest";
     const userIdFromToken = payload["sub"];
+
+    const groups: string[] = payload["cognito:groups"] || [];
+
+    let userRole = "Guest";
+
+    if (groups.includes(Resource.UserGroups.Admin)) {
+      userRole = Resource.UserGroups.Admin;
+    } else if (groups.includes(Resource.UserGroups.Branch_Manager)) {
+      userRole = Resource.UserGroups.Branch_Manager;
+    } else if (groups.includes(Resource.UserGroups.Customer)) {
+      userRole = Resource.UserGroups.Customer;
+    }
     console.log("👤 User role:", userRole);
 
     if (!rolePermissions[userRole]) {
@@ -367,8 +397,39 @@ export const main = async (event: any): Promise<any> => {
       throw new Error("Access denied: No permissions assigned to your role");
     }
 
+    /* ================= BRANCH MANAGER STATUS CHECK ================= */
+    if (userRole === Resource.UserGroups.Branch_Manager) {
+      const result = await dynamoDb.send(
+        new QueryCommand({
+          TableName: Resource.BranchManager.name,
+          IndexName: "userIndex", // ✅ GSI
+          KeyConditionExpression: "userId = :uid",
+          ExpressionAttributeValues: {
+            ":uid": userIdFromToken,
+          },
+          Limit: 1,
+        })
+      );
+
+      const manager = result.Items?.[0];
+
+      if (!manager) {
+        throw new Error("BRANCH_MANAGER_NOT_REGISTERED");
+      }
+
+      if (manager.status !== "ACTIVE") {
+        return {
+          isAuthorized: false,
+          context: {
+            errorCode: "ACCOUNT_DISABLED",
+          },
+        };
+        }
+    }
+    // ==============================================
+
     // Fetch user from DB
-    if(userRole != 'Admin'){
+    if(userRole != 'Admin' && userRole != 'Branch_Manager') {
       const userFromDB = await getUserFromDB(userIdFromToken);
       if (!userFromDB) {
         console.error("🚫 User not found in DB:", userIdFromToken);

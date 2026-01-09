@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
+import { useEffect } from "react";
+import { fetchAuthSession } from "aws-amplify/auth";
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -13,33 +16,52 @@ export default function LoginPage() {
 
   const [error, setError] = useState("");
 
-  const handleLogin = async (e : any) => {
-    e.preventDefault();
-    setError("");
-
+  useEffect(() => {
+  const checkExistingSession = async () => {
     try {
-      await login(form.email, form.password, { isAdminOnly: true });
-
-      // ✅ Once user logs in successfully, navigate
-      navigate("/admin-dashboard");
-    } catch (err) {
-      // ✅ 2. Catch the error and set the message
-      console.error("Admin login failed:", error);
-
-      // The toast notification is already handled by the AuthContext.
-      // Here, we set a message to display inline within the form.
-      if (error === "ADMIN_ACCESS_REQUIRED") {
-        setError("You do not have permission to sign in.");
-      } else if (error === "UserNotConfirmedException") {
-        setError(
-          "Your account has not been confirmed. Please check your email."
-        );
-      } else {
-        // For other errors like "NotAuthorizedException"
-        setError("Invalid email or password. Please try again.");
+      const session = await fetchAuthSession();
+      if (session.tokens) {
+        navigate("/admin-dashboard");
       }
+    } catch {
+      // not logged in
     }
   };
+
+  checkExistingSession();
+}, []);
+
+  const handleLogin = async (e: any) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const result = await login(form.email, form.password, {
+      allowAdminPanel: true,
+    }); 
+
+    if (result?.status === "NEW_PASSWORD_REQUIRED") {
+      navigate("/set-new-password", {
+        state: { email: form.email },
+      });
+      return;
+    }
+
+    if (result?.status === "SIGNED_IN") {
+      navigate("/admin-dashboard");
+      return;
+    }
+
+    throw new Error("Unhandled login state");
+    
+  } catch (err: any) {
+    if (err.message === "ACCOUNT_DISABLED") {
+      alert("Your account has been disabled. Please contact admin.");
+      return;
+    }
+    setError("Invalid email or password");
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">

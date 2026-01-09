@@ -7,19 +7,13 @@ import { bucket } from "./storage";
 
 export function ApiStack(
   storage: ReturnType<typeof import("./storage").StorageStack>,
+  auth: {
+    userPool: any;
+    userPoolClient: any;
+    userGroups: any;
+  },
   email: ReturnType<typeof import("./email").EmailStack>
 ) {
-  // Default Lambda configuration with CloudWatch settings
-  // const defaultFunctionProps = {
-  //   runtime: "nodejs20.x" as const,
-  //   logging: {
-  //     retention: "1 week", // Options: "1 day", "3 days", "1 week", "2 weeks", "1 month", "2 months", "3 months", "4 months", "5 months", "6 months", "1 year"
-  //     format: "json" as const, // Structured JSON logs for better CloudWatch Insights queries
-  //   },
-  //   // Optional: Add X-Ray tracing for better observability
-  //   // Enable this if you want distributed tracing
-  //   // tracing: "active" as const,
-  // };
   const defaultFunctionProps = {
     runtime: "nodejs20.x" as const,
     logging: {
@@ -42,14 +36,6 @@ export function ApiStack(
         "https://d28g469uwcbitn.cloudfront.net", // development
       ],
       allowHeaders: ["*"],
-      // allowHeaders: [
-      //   "Content-Type",
-      //   "Authorization",
-      //   "X-Amz-Date",
-      //   "X-Api-Key",
-      //   "X-Amz-Security-Token",
-      // ],
-
       allowCredentials: true,
     },
   });
@@ -62,7 +48,7 @@ export function ApiStack(
     lambda: {
       function: {
         handler: "packages/functions/src/authorizer.main",
-        link: [userPoolClient, userPool, userGroups, storage.tables.user],
+        link: [userPoolClient, userPool, userGroups, storage.tables.user, storage.tables.branchManager],
         ...defaultFunctionProps,
       },
       ttl: "10 seconds",
@@ -677,6 +663,71 @@ export function ApiStack(
     protectedRouteConfig
   ); // PROTECTED (already done)
 
+  // ======= Branch Manager ==============
+
+  api.route(
+    "POST /branch_manager",
+    {
+      handler: "packages/functions/src/branchManager/create.main",
+      name: `${$app.name}-${$app.stage}-Create-Branch-Manager`,
+      link: [
+      storage.tables.branchManager,
+      auth.userPool,        // ✅ REQUIRED
+      auth.userPoolClient,  // ✅ optional but recommended
+      auth.userGroups,
+      email,
+    ],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  ); 
+
+  api.route(
+    "GET /branch_manager",
+    {
+      handler: "packages/functions/src/branchManager/getAllBranchManagers.main",
+      name: `${$app.name}-${$app.stage}-Get-Branch-Managers`,
+      link: [storage.tables.branchManager],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  ); 
+
+  api.route(
+    "PUT /branch_manager/status/{email}",
+    {
+      handler: "packages/functions/src/branchManager/updateStatus.main",
+      name: `${$app.name}-${$app.stage}-Update-Managers`,
+      link: [storage.tables.branchManager],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
+    "DELETE /branch_manager/delete/{id}",
+    {
+      handler: "packages/functions/src/branchManager/deleteManager.main",
+      name: `${$app.name}-${$app.stage}-Manager-Delete`,
+      link: [storage.tables.branchManager],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
+    "GET /auth/me",
+    {
+      handler: "packages/functions/src/auth/me.main",
+      name: `${$app.name}-${$app.stage}-Auth-Me`,
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig // 🔥 MUST use authorizer
+  );
+  
+
+  // ========================================
+
   api.route(
     "POST /category",
     {
@@ -851,7 +902,7 @@ export function ApiStack(
     {
       handler: "packages/functions/src/adminOrder/getAll.main",
       name: `${$app.name}-${$app.stage}-GetAllOrders`,
-      link: [storage.tables.order, storage.tables.branch, storage.tables.user],
+      link: [storage.tables.order, storage.tables.branch, storage.tables.user, storage.tables.branchManager],
       ...defaultFunctionProps,
     },
     protectedRouteConfig
@@ -863,7 +914,7 @@ export function ApiStack(
     {
       handler: "packages/functions/src/adminOrder/getOrdersStats.main",
       name: `${$app.name}-${$app.stage}-GetOrdersStats`,
-      link: [storage.tables.order],
+      link: [storage.tables.order, storage.tables.branchManager],
       ...defaultFunctionProps,
     },
     protectedRouteConfig

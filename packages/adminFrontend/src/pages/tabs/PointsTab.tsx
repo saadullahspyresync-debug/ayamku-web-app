@@ -7,6 +7,7 @@ import { uploadImagesToS3 } from "../../api/uploadApi";
 import { toast } from "sonner";
 import { getAllItems } from "../../api/item";
 import { Loader } from "../../components/Loader";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface RedeemableForm {
   name: string;
@@ -22,9 +23,8 @@ interface RedeemableForm {
 }
 
 export default function PointsTab() {
-  const [activeSubTab, setActiveSubTab] = useState<
-    "config" | "redeemables" | "analytics"
-  >("config");
+  const { user } = useAuth();
+  const [activeSubTab, setActiveSubTab] = useState<"config" | "redeemables" | "analytics">(user?.role === "Branch_Manager" ? "analytics" : "config");
 
   // Config State
   const [config, setConfig] = useState({
@@ -280,26 +280,30 @@ export default function PointsTab() {
 
       {/* Sub Tabs */}
       <div className="flex gap-2 border-b">
-        <button
-          onClick={() => setActiveSubTab("config")}
-          className={`px-4 py-2 font-medium ${
-            activeSubTab === "config"
-              ? "border-b-2 border-yellow-500 text-yellow-600"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Configuration
-        </button>
-        <button
-          onClick={() => setActiveSubTab("redeemables")}
-          className={`px-4 py-2 font-medium ${
-            activeSubTab === "redeemables"
-              ? "border-b-2 border-yellow-500 text-yellow-600"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Redeemable Items
-        </button>
+        {user?.role === "Admin" && (
+          <>
+            <button
+              onClick={() => setActiveSubTab("config")}
+              className={`px-4 py-2 font-medium ${
+                activeSubTab === "config"
+                  ? "border-b-2 border-yellow-500 text-yellow-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Configuration
+            </button>
+            <button
+              onClick={() => setActiveSubTab("redeemables")}
+              className={`px-4 py-2 font-medium ${
+                activeSubTab === "redeemables"
+                  ? "border-b-2 border-yellow-500 text-yellow-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Redeemables
+            </button>
+          </>
+        )}
         <button
           onClick={() => setActiveSubTab("analytics")}
           className={`px-4 py-2 font-medium ${
@@ -606,7 +610,7 @@ export default function PointsTab() {
           </div>
 
           {/* Preview Image */}
-          {form.preview && (
+          {/* {form.preview && (
             <div>
               <label className="block text-sm font-medium mb-1">Preview</label>
               <img
@@ -615,7 +619,7 @@ export default function PointsTab() {
                 className="w-full h-40 object-cover mt-1 rounded"
               />
             </div>
-          )}
+          )} */}
 
           {/* Description */}
           <div>

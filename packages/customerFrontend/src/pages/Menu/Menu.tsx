@@ -10,14 +10,18 @@ import { FilterBar } from "./FilterBar";
 import { FilterPanel } from "./FilterPanel";
 import { MenuGrid } from "./MenuGrid";
 import { CartSidebar } from "./CartsSidebar";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 const Menu = () => {
   const { t } = useTranslation();
   const { addItem } = useCartStore();
   const { selectedBranch } = useBranchStore();
 
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get("category") || "All";
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl);
+
+  // const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
   const [mealTypeFilter, setMealTypeFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
@@ -29,17 +33,21 @@ const Menu = () => {
 
   const location = useLocation();
 
-  useEffect(() => {
-    if (location.state?.category) {
-      setActiveCategory(location.state.category);
-    }
-  }, [location.state]);
+  // useEffect(() => {
+  //   if (location.state?.category) {
+  //     setActiveCategory(location.state.category);
+  //   }
+  // }, [location.state]);
 
-//   useEffect(() => {
-//     const store = useCartStore.getState();
-//     store.clearCart();
-//     // useCartStore.persist.clearStorage();
-// }, []);
+  // Sync URL → state (on refresh / back / forward)
+  useEffect(() => {
+    if (categories1.includes(categoryFromUrl)) {
+      setActiveCategory(categoryFromUrl);
+    } else {
+      setActiveCategory("All");
+    }
+  }, [categoryFromUrl, categories1]);
+
 
   useEffect(() => {
     const loadBranchItems = async () => {
@@ -152,6 +160,17 @@ const Menu = () => {
     stockFilter !== "all",
   ].filter(Boolean).length;
 
+    // ✅ ADD THE FUNCTION HERE
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+
+    if (category === "All") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category });
+    }
+  };
+
   const itemsToShow = getFilteredAndSortedItems();
 
   if (loading) return <Loader />;
@@ -166,7 +185,7 @@ const Menu = () => {
             <FilterBar
               categories={categories1}
               activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
+              setActiveCategory={handleCategoryChange}
               showFilters={showFilters}
               setShowFilters={setShowFilters}
               activeFiltersCount={activeFiltersCount}

@@ -50,6 +50,15 @@ export const FilterBar = ({
       };
     }
   }, [categories]);
+  
+
+  useEffect(() => {
+  const activeTab = scrollContainerRef.current?.querySelector(
+    '[data-state="active"]'
+  );
+  activeTab?.scrollIntoView({ behavior: "smooth", inline: "center" });
+}, [activeCategory]);
+
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {

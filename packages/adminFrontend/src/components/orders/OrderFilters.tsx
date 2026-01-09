@@ -12,6 +12,7 @@ interface OrderFiltersProps {
   setBranchFilter: (branch: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  hideBranchFilter: boolean; 
 }
 
 export default function OrderFilters({
@@ -22,6 +23,7 @@ export default function OrderFilters({
   setBranchFilter,
   searchQuery,
   setSearchQuery,
+  hideBranchFilter = false,
 }: OrderFiltersProps) {
   const statuses = [
     { value: "all", label: "All Status" },
@@ -74,7 +76,8 @@ export default function OrderFilters({
         </div>
 
         {/* Branch Filter */}
-        <div>
+        {!hideBranchFilter && (
+          <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Branch
           </label>
@@ -91,6 +94,7 @@ export default function OrderFilters({
             ))}
           </select>
         </div>
+        )}
       </div>
 
       {/* Clear Filters */}

@@ -89,13 +89,13 @@ export const deleteOrder = async (id: string): Promise<void> => {
 };
 
 // Get order statistics
-export const getOrderStats = async (): Promise<{
+export const getOrderStats = async ( params?: { branchId?: string } ): Promise<{
   totalOrders: number;
   pendingOrders: number;
   completedOrders: number;
   cancelledOrders: number;
   totalRevenue: number;
 }> => {
-  const response = await api.get('/admin/orders-stats');
+  const response = await api.get('/admin/orders-stats', {params});
   return response.data;
 };

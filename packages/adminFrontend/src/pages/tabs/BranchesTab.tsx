@@ -8,8 +8,13 @@ import {
   deleteBranch,
 } from "../../api/branch";
 import { Loader } from "../../components/Loader";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function BranchesTab() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+  const managerBranchId = user?.branchId;
+
   const emptyBranch = {
     name: "",
     address: "",
@@ -37,10 +42,21 @@ export default function BranchesTab() {
     try {
       setLoading(true);
       const { data } = await getAllBranches();
-      setBranches(data.data);
+      
+      // --- 2. FILTER LOGIC ---
+      if (isAdmin) {
+        setBranches(data.data);
+      } else {
+        // Only show the branch that matches the manager's assigned branchId
+        const filtered = data.data.filter((b: any) => b.branchId === managerBranchId);
+        setBranches(filtered);
+      }
     } catch (err) {
       console.error(err);
       setError("Failed to fetch branches.");
+      setTimeout(() => {
+        setError("")
+      }, 3000);
     } finally {
       setLoading(false);
     }
@@ -76,6 +92,7 @@ export default function BranchesTab() {
 
   const handleSave = async () => {
     try {
+      setLoading(true)
       if (editingId) {
         await updateBranch(editingId, form);
       } else {
@@ -83,9 +100,13 @@ export default function BranchesTab() {
       }
       setIsOpen(false);
       fetchBranches();
-    } catch (err) {
+    } 
+    catch (err) {
       console.error(err);
       setError("Failed to save branch.");
+    }
+    finally {
+      setLoading(false)
     }
   };
 
@@ -126,14 +147,16 @@ export default function BranchesTab() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-bold text-gray-800">Branches</h3>
-        <button
-          onClick={openAdd}
-          className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
-        >
-           {loading ? "Loading..." : "+ Add Branch"}
-          
-        </button>
+        <h3 className="text-2xl font-bold text-gray-800">{isAdmin ? "Branches" : "My Branch"}</h3>
+        {/* --- 3. HIDE ADD BUTTON FOR MANAGERS --- */}
+        {isAdmin && (
+          <button
+            onClick={openAdd}
+            className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
+          >
+            {loading ? "Loading..." : "+ Add Branch"}
+          </button>
+        )}
       </div>
 
       {error && <p className="text-red-600">{error}</p>}
@@ -186,12 +209,15 @@ export default function BranchesTab() {
                 >
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDelete(branch.branchId)}
-                  className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm"
-                >
-                  Delete
-                </button>
+                {/* --- 4. HIDE DELETE BUTTON FOR MANAGERS --- */}
+                {isAdmin && (
+                  <button
+                    onClick={() => handleDelete(branch._id)}
+                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -374,7 +400,7 @@ export default function BranchesTab() {
               onClick={handleSave}
               className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={() => setIsOpen(false)}

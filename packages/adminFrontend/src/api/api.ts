@@ -1,6 +1,6 @@
 // src/api/api.ts
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import { fetchAuthSession } from "aws-amplify/auth"; // ✅ Import fetchAuthSession from Amplify
+import { fetchAuthSession, signOut } from "aws-amplify/auth"; // ✅ Import fetchAuthSession from Amplify
 
 const api: AxiosInstance = axios.create({
   baseURL:
@@ -38,6 +38,33 @@ api.interceptors.request.use(
   },
   (error) => {
     // This part handles errors in creating the request itself
+    return Promise.reject(error);
+  }
+);
+
+// ✅ Response interceptor: handle disabled branch manager account and force logout
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error.response?.status;
+
+    // API Gateway + Authorizer denial
+    if (status === 403) {
+      const errorCode =
+        error.response?.headers?.["x-error-code"] ||
+        error.response?.headers?.["x-amzn-errortype"];
+
+      if (
+        errorCode === "ACCOUNT_DISABLED" ||
+        errorCode?.includes("ACCOUNT_DISABLED")
+      ) {
+        await signOut();
+        alert("Your account has been disabled. Please contact admin.");
+        window.location.href = "/login";
+        return;
+      }
+    }
+
     return Promise.reject(error);
   }
 );

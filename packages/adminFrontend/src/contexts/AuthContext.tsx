@@ -21,8 +21,10 @@ import {
   type ResetPasswordInput,
   type ConfirmResetPasswordInput,
 } from "aws-amplify/auth";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { authMe } from "../api/branchManager";
+
+export type UserRole = "Admin" | "Branch_Manager" | "Customer";
 
 export interface CognitoUser {
   userId: string;
@@ -32,7 +34,8 @@ export interface CognitoUser {
   name?: string;
   email_verified?: boolean;
   phoneNumberVerified?: boolean;
-  role: string | null;
+  role: UserRole;
+  branchId?: string;
 }
 
 interface AuthContextType {
@@ -42,13 +45,12 @@ interface AuthContextType {
   login: (
     email: string,
     password: string,
-    options?: { isAdminOnly?: boolean }
-  ) => Promise<void>;
+    options?: { allowAdminPanel?: boolean }
+  ) => Promise<{ status: "SIGNED_IN" | "NEW_PASSWORD_REQUIRED" }>;
   signup: (
     email: string,
     password: string,
     fullName: string,
-    role?: "Admin" | "Customer"
   ) => Promise<{ isSignUpComplete: boolean; userId?: string; nextStep?: any }>;
   logout: () => Promise<void>;
   confirmSignup: (username: string, code: string) => Promise<void>;
@@ -61,6 +63,7 @@ interface AuthContextType {
   ) => Promise<void>;
   getAccessToken: () => Promise<string | null>;
   refreshUser: () => Promise<void>;
+  checkAuthState: () => Promise<CognitoUser | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,146 +80,182 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const checkAuthState = useCallback(async () => {
     try {
       const currentUser = await getCurrentUser();
-      const session = await fetchAuthSession();
+      const session = await fetchAuthSession({ forceRefresh: true });
 
-      if (currentUser && session.tokens) {
-        const idToken = session.tokens.idToken?.payload;
-
-        const userGroups = idToken?.["cognito:groups"] || [];
-
-        const userRole = Array.isArray(userGroups) ? userGroups[0] : null;
-
-        // src/AuthContext.tsx
-
-        if (!Array.isArray(userGroups) || !userGroups.includes("Admin")) {
-          await signOut(); // Immediately sign the user out
-          // ✅ THIS LINE SHOWS THE ERROR POP-UP
-          toast.error(
-            "Access Denied. You do not have administrator privileges."
-          );
-          throw new Error("ADMIN_ACCESS_REQUIRED"); // This stops execution
-        }
-
-        const userData: CognitoUser = {
-          userId: currentUser.userId,
-          username: currentUser.username,
-          email: idToken?.email as string,
-          name: idToken?.name as string,
-          phone: idToken?.phone_number as string,
-          email_verified: idToken?.email_verified as boolean,
-          // ✅ Add role here
-          role: (userRole as string | null) || "Customer", // default fallback
-        };
-
-        setUser(userData);
-        setIsAuthenticated(true);
+      if (!currentUser || !session.tokens) {
+        setUser(null);
+        setIsAuthenticated(false);
+        return null;
       }
-    } catch (error) {
+
+      const idToken = session.tokens.idToken?.payload;
+      const groups: string[] = Array.isArray(idToken?.["cognito:groups"])
+        ? idToken?.["cognito:groups"].filter(
+            (g): g is string => typeof g === "string"
+          )
+        : [];
+
+      let role: "Admin" | "Branch_Manager" | "Customer" = "Customer";
+      if (groups.includes("Admin")) role = "Admin";
+      else if (groups.includes("Branch_Manager")) role = "Branch_Manager";
+
+      let branchId: string | undefined = undefined;
+      if(groups.includes("Branch_Manager")) {
+        branchId = idToken?.["custom:branchId"] as string;
+      }
+
+      const userData: CognitoUser = {
+        userId: currentUser.userId,
+        username: currentUser.username,
+        email: idToken?.email as string,
+        name: idToken?.name as string,
+        phone: idToken?.phone_number as string,
+        email_verified: idToken?.email_verified as boolean,
+        role,
+        branchId,
+      };
+
+      setUser(userData);
+      setIsAuthenticated(true);
+      return userData;
+    } 
+    catch (error) {
       setUser(null);
       setIsAuthenticated(false);
-    } finally {
+      return null;
+    } 
+    finally {
       setIsLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     checkAuthState();
   }, [checkAuthState]);
 
-  const login = async (
-    email: string,
-    password: string,
-    options?: { isAdminOnly?: boolean }
-  ) => {
-    try {
-      const { isSignedIn, nextStep } = await signIn({
-        username: email,
-        password,
-      });
+  // const login = async (
+  //   email: string,
+  //   password: string,
+  //   options?: { allowAdminPanel?: boolean }    
+  //   ): Promise<{ status: "SIGNED_IN" | "NEW_PASSWORD_REQUIRED" }> => {
+  //     try {
+  //       const response = await signIn({
+  //         username: email,
+  //         password,
+  //       });
 
-      if (isSignedIn) {
-        // ✅ If this is an admin-only login, perform the group check
-        if (options?.isAdminOnly) {
-          const session = await fetchAuthSession();
-          const userGroups =
-            session.tokens?.idToken?.payload?.["cognito:groups"] || [];
+  //       const { isSignedIn, nextStep } = response;
 
-          // If the user is not in the "Admin" group, deny access
-          if (!Array.isArray(userGroups) || !userGroups.includes("Admin")) {
-            await signOut(); // Immediately sign the user out
-            toast.error(
-              "Access Denied. You do not have administrator privileges."
-            );
-            throw new Error("ADMIN_ACCESS_REQUIRED");
-          }
-        }
+  //       // First time login for branch manager
+  //       if (nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+  //         return { status: "NEW_PASSWORD_REQUIRED" };
+  //       }
 
-        // If the check passes (or isn't required), proceed to set the user state
-        await checkAuthState();
-        toast.success("Login successful!");
-      } else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
-        toast.error("Please verify your email first");
-        throw new Error("CONFIRM_SIGN_UP_REQUIRED");
-      }
-    } catch (error: any) {
-      // Avoid showing a generic error if we threw our custom admin error
-      if (error.message === "ADMIN_ACCESS_REQUIRED") {
-        throw error;
-      }
+  //       // Normal login
+  //       if (isSignedIn) {
+  //         if (options?.allowAdminPanel) {
+  //           const session = await fetchAuthSession();
+  //           const rawGroups =   session.tokens?.idToken?.payload?.["cognito:groups"];
+  //           const groups: string[] = Array.isArray(rawGroups)
+  //             ? rawGroups.filter(
+  //                 (g): g is string => typeof g === "string"
+  //               )
+  //             : [];
+  //           const allowed = groups.includes("Admin") || groups.includes("Branch_Manager");
+  //           if (!allowed) {
+  //             await signOut();
+  //             throw new Error("ADMIN_ACCESS_REQUIRED");
+  //           }            
+  //         }
 
-      console.error("Login error:", error);
+  //         const user = await checkAuthState();
+  //         if (!user) {
+  //           throw new Error("AUTH_STATE_NOT_READY");
+  //         }
 
-      if (error.name === "UserNotConfirmedException") {
-        toast.error("Please verify your email first");
-        throw new Error("CONFIRM_SIGN_UP_REQUIRED");
-      } else if (error.name === "NotAuthorizedException") {
-        toast.error("Incorrect email or password");
-      } else if (error.name === "UserNotFoundException") {
-        toast.error("User not found");
-      } else {
-        toast.error(error.message || "Login failed");
-      }
-      throw error;
-    }
-  };
+  //         return { status: "SIGNED_IN" };
+  //       }
 
-  // const login = async (email: string, password: string) => {
-  //   try {
-
-  //     const { isSignedIn, nextStep } = await signIn({
-  //       username: email,
-  //       password,
-  //     });
-
-  //     if (isSignedIn) {
-  //       await checkAuthState();
-  //       toast.success("Login successful!");
-  //     } else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
-  //       toast.error("Please verify your email first");
-  //       throw new Error("CONFIRM_SIGN_UP_REQUIRED");
+  //       throw new Error("UNKNOWN_LOGIN_STATE");
+  //     } 
+  //     catch (error) {
+  //       console.error("Login error:", error);
+  //       throw error;
   //     }
-  //   } catch (error: any) {
-  //     console.error("Login error:", error);
-
-  //     if (error.name === "UserNotConfirmedException") {
-  //       toast.error("Please verify your email first");
-  //       throw new Error("CONFIRM_SIGN_UP_REQUIRED");
-  //     } else if (error.name === "NotAuthorizedException") {
-  //       toast.error("Incorrect email or password");
-  //     } else if (error.name === "UserNotFoundException") {
-  //       toast.error("User not found");
-  //     } else {
-  //       toast.error(error.message || "Login failed");
-  //     }
-  //     throw error;
-  //   }
   // };
+
+ const login = async (
+  email: string,
+  password: string,
+  options?: { allowAdminPanel?: boolean }
+): Promise<{ status: "SIGNED_IN" | "NEW_PASSWORD_REQUIRED" }> => {
+  try {
+    const response = await signIn({
+      username: email,
+      password,
+    });
+
+    const { isSignedIn, nextStep } = response;
+
+    // First-time password reset
+    if (
+      nextStep?.signInStep ===
+      "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+    ) {
+      return { status: "NEW_PASSWORD_REQUIRED" };
+    }
+
+    if (!isSignedIn) {
+      throw new Error("SIGN_IN_FAILED");
+    }
+
+    /* ================= ROLE CHECK (OPTIONAL UI FILTER) ================= */
+    if (options?.allowAdminPanel) {
+      const session = await fetchAuthSession();
+      const rawGroups =
+        session.tokens?.idToken?.payload?.["cognito:groups"];
+
+      const groups: string[] = Array.isArray(rawGroups)
+        ? rawGroups.filter((g): g is string => typeof g === "string")
+        : [];
+
+      const allowed =
+        groups.includes("Admin") || groups.includes("Branch_Manager");
+
+      if (!allowed) {
+        await signOut();
+        throw new Error("ADMIN_ACCESS_REQUIRED");
+      }
+    }
+
+    /* ================= 🔥 GATEKEEPER API ================= */
+    try {
+      await authMe(); // 👈 AUTHORITATIVE CHECK
+    } 
+    catch {
+      await signOut();
+      throw new Error("ACCOUNT_DISABLED");
+    }
+
+    /* ================= FINAL AUTH STATE ================= */
+    const user = await checkAuthState();
+    if (!user) {
+      throw new Error("AUTH_STATE_NOT_READY");
+    }
+
+    return { status: "SIGNED_IN" };
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
 
   const signup = async (
     email: string,
     password: string,
     fullName: string,
-    role: "Admin" | "Customer" = "Customer"
   ) => {
     try {
       const trimmedEmail = email.trim();
@@ -229,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           userAttributes: {
             email: trimmedEmail,
             name: fullName.trim(),
-            "custom:role": role, // ✅ attach custom attribute
+            "custom:role": "Customer", // ✅ attach custom attribute
           },
           autoSignIn: true,
         },
@@ -260,64 +299,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       throw error;
     }
   };
-
-  // const signup = async (
-  //   email: string,
-  //   password: string,
-  //   fullName: string,
-  //   phone?: string
-  // ) => {
-  //   try {
-  //     // ✅ Ensure phone number is in E.164 format (e.g., +923001234567)
-  //     let formattedPhone: string | undefined = undefined;
-  //     if (phone) {
-  //       const digitsOnly = phone.replace(/\D/g, ""); // remove non-numeric
-  //       if (digitsOnly.startsWith("0")) {
-  //         formattedPhone = `+92${digitsOnly.slice(1)}`; // assumes Pakistan numbers
-  //       } else if (!digitsOnly.startsWith("92")) {
-  //         formattedPhone = `+${digitsOnly}`; // add plus if missing
-  //       } else {
-  //         formattedPhone = `+${digitsOnly}`;
-  //       }
-  //     }
-
-  //     const signUpInput: SignUpInput = {
-  //       username: email,
-  //       password,
-  //       options: {
-  //         userAttributes: {
-  //           email,
-  //           name: fullName,
-  //           ...(formattedPhone && { phone_number: formattedPhone }),
-  //         },
-  //         autoSignIn: true,
-  //       },
-  //     };
-
-  //     const { isSignUpComplete, userId, nextStep } = await signUp(signUpInput);
-
-  //     if (nextStep.signUpStep === "CONFIRM_SIGN_UP") {
-  //       toast.success("Verification code sent to your email!");
-  //     } else if (isSignUpComplete) {
-  //       toast.success("Sign up complete!");
-  //     }
-
-  //     return { isSignUpComplete, userId, nextStep };
-  //   } catch (error: any) {
-  //     console.error("Signup error:", error);
-
-  //     if (error.name === "UsernameExistsException") {
-  //       toast.error("An account with this email already exists");
-  //     } else if (error.name === "InvalidPasswordException") {
-  //       toast.error("Password does not meet requirements");
-  //     } else if (error.name === "InvalidParameterException") {
-  //       toast.error("Invalid input parameters — check email or phone format");
-  //     } else {
-  //       toast.error(error.message || "Signup failed");
-  //     }
-  //     throw error;
-  //   }
-  // };
 
   const confirmSignup = async (username: string, code: string) => {
     try {
@@ -439,6 +420,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         confirmForgotPassword,
         getAccessToken,
         refreshUser,
+        checkAuthState,
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import {
   DynamoDBDocumentClient,
   ScanCommand,
   BatchGetCommand,
+  QueryCommand
 } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst";
 
@@ -14,55 +15,56 @@ const sendResponse = (status: number, message: string, data?: any) => ({
   body: JSON.stringify({ message, data }),
 });
 
-// export const main = async (event: any) => {
-//   try {
-//     const page = parseInt(event.queryStringParameters?.page || "1");
-//     const pageSize = parseInt(event.queryStringParameters?.pageSize || "10");
-
-//     const data = await dynamoDb.send(new ScanCommand({ TableName: TABLE }));
-//     const orders = data.Items || [];
-
-//     const branchIds = [...new Set(orders.map((o) => o.branchId))];
-//     const userIds = [...new Set(orders.map((o) => o.userId))];
-
-//     const branchTable = Resource.Branch.name;
-//     const userTable = Resource.User.name;
-
-//     const relatedData = await dynamoDb.send(
-//       new BatchGetCommand({
-//         RequestItems: {
-//           [branchTable]: { Keys: branchIds.map((id) => ({ branchId: id })) },
-//           [userTable]: { Keys: userIds.map((id) => ({ userId: id })) },
-//         },
-//       })
-//     );
-
-//     const branches = relatedData.Responses?.[branchTable] || [];
-//     const users = relatedData.Responses?.[userTable] || [];
-
-//     const populatedOrders = orders.map((order) => ({
-//       ...order,
-//       branch: branches.find((b) => b.branchId === order.branchId),
-//       user: users.find((u) => u.userId === order.userId),
-//     }));
-
-//     return sendResponse(200, "Orders fetched successfully", {
-//       orders: populatedOrders,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching orders:", error);
-//     return sendResponse(500, "Error fetching orders", { error: String(error) });
-//   }
-// };
-
 export const main = async (event: any) => {
   try {
+    /* ================= AUTH ================= */
+    const auth = event.requestContext.authorizer?.lambda;
+    if (!auth) {
+      return sendResponse(401, "Unauthorized");
+    }
+
+    const userId = auth.userId;    
+
+    let role: "Admin" | "Branch_Manager" | null = null;
+    if (auth.userRole.includes("Admin")) role = "Admin";
+    else if (auth.userRole.includes("Branch_Manager")) role = "Branch_Manager";
+
+    if (!role) {
+      return sendResponse(403, "Access denied");
+    }
+
+    /* ================= QUERY PARAMS ================= */
     const page = parseInt(event.queryStringParameters?.page || "1");
     const pageSize = parseInt(event.queryStringParameters?.pageSize || "10");
     const statusFilter = event.queryStringParameters?.status;
     const branchIdFilter = event.queryStringParameters?.branchId;
 
-    // Scan all orders (consider using Query if possible for efficiency)
+    /* ================= BRANCH RESTRICTION ================= */
+    let enforcedBranchId: string | null = null;
+
+    if (role === "Branch_Manager") {
+      // 🔒 get assigned branchId
+      const bm = await dynamoDb.send(
+        new QueryCommand({
+          TableName: Resource.BranchManager.name,
+          IndexName: "userIndex", // 👈 GSI
+          KeyConditionExpression: "userId = :uid",
+          ExpressionAttributeValues: {
+            ":uid": userId,
+          },
+          Limit: 1,
+        })
+      );
+
+      const item = bm.Items?.[0];
+      enforcedBranchId = item?.branchId;
+
+      if (!enforcedBranchId) {
+        return sendResponse(403, "Branch not assigned");
+      }
+    }
+
+    /* ================= FETCH ORDERS ================= */
     let orders: any[] = [];
     let ExclusiveStartKey: any = undefined;
 
@@ -74,33 +76,43 @@ export const main = async (event: any) => {
       ExclusiveStartKey = data.LastEvaluatedKey;
     } while (ExclusiveStartKey);
 
-    // Apply filters
+    /* ================= FILTERING ================= */
     if (statusFilter) {
-      orders = orders.filter((order) => order.status === statusFilter);
+      orders = orders.filter((o) => o.status === statusFilter);
     }
+
     if (branchIdFilter) {
       orders = orders.filter((order) => order.branchId === branchIdFilter);
     }
 
-    // Populate branch/user info
+    // 🔒 Enforced branch filter
+    if (role === "Branch_Manager") {
+      orders = orders.filter((o) => o.branchId === enforcedBranchId);
+    }
+
+    /* ================= POPULATE BRANCH + USER ================= */
     const branchIds = [...new Set(orders.map((o) => o.branchId))];
     const userIds = [...new Set(orders.map((o) => o.userId))];
 
-    const branchTable = Resource.Branch.name;
-    const userTable = Resource.User.name;
     let branches: any[] = [];
     let users: any[] = [];
-    if (branchIds.length > 0 || userIds.length > 0) {
+
+    if (branchIds.length || userIds.length) {
       const relatedData = await dynamoDb.send(
         new BatchGetCommand({
           RequestItems: {
-            [branchTable]: { Keys: branchIds.map((id) => ({ branchId: id })) },
-            [userTable]: { Keys: userIds.map((id) => ({ userId: id })) },
+            [Resource.Branch.name]: {
+              Keys: branchIds.map((id) => ({ branchId: id })),
+            },
+            [Resource.User.name]: {
+              Keys: userIds.map((id) => ({ userId: id })),
+            },
           },
         })
       );
-      branches = relatedData.Responses?.[branchTable] || [];
-      users = relatedData.Responses?.[userTable] || [];
+
+      branches = relatedData.Responses?.[Resource.Branch.name] || [];
+      users = relatedData.Responses?.[Resource.User.name] || [];
     }
 
     const populatedOrders = orders.map((order) => ({
@@ -109,7 +121,7 @@ export const main = async (event: any) => {
       user: users.find((u) => u.userId === order.userId),
     }));
 
-    // Pagination
+    /* ================= PAGINATION ================= */
     const startIndex = (page - 1) * pageSize;
     const paginatedOrders = populatedOrders.slice(
       startIndex,

@@ -8,40 +8,32 @@ import {
   ArrowRightOnRectangleIcon,
   SparklesIcon,
   ShoppingBagIcon,
+  UsersIcon
 } from "@heroicons/react/24/outline";
-
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
-// The useNavigate import is no longer needed here if logout navigation is handled globally
-// import { useNavigate } from "react-router-dom";
-
-const navItems = [
-  { id: "overview", label: "Overview", icon: HomeIcon },
-  { id: "branches", label: "Branches", icon: BuildingStorefrontIcon },
-  { id: "menu", label: "Menu", icon: Squares2X2Icon },
-  { id: "promotions", label: "Promotions", icon: MegaphoneIcon },
-  { id: "orders", label: "Orders", icon: ShoppingBagIcon },
-  { id: "points", label: "Points", icon: ChartBarIcon },
-  { id: "highlights", label: "Highlights", icon: SparklesIcon },
-  { id: "contact", label: "Contact Requests", icon: UserGroupIcon },
-];
 
 export default function Sidebar({ activeTab, setActiveTab } : any) {
-  const { logout } = useAuth(); // ✅ Get the logout function from the context
-  // const navigate = useNavigate(); // No longer needed here
+  const { user, logout } = useAuth(); 
 
-  // The handleLogout function now correctly uses the logout function from the context.
-  // It could be simplified even further by calling logout directly in onClick.
+  const navItems = [
+  { id: "overview", label: "Overview", icon: HomeIcon, roles: ["Admin"] },
+  { id: "branches", label: user?.role === "Admin" ? "Branches" : "My Branch" , icon: BuildingStorefrontIcon, roles: ["Admin", "Branch_Manager"] },
+  { id: "branch manager", label: "Branch Manager", icon: UsersIcon, roles: ["Admin"]  },
+  { id: "menu", label: "Menu", icon: Squares2X2Icon, roles: ["Admin"]  },
+  { id: "promotions", label: "Promotions", icon: MegaphoneIcon, roles: ["Admin"]  },
+  { id: "orders", label: "Orders", icon: ShoppingBagIcon, roles: ["Admin", "Branch_Manager"] },
+  { id: "points", label: "Points", icon: ChartBarIcon, roles: ["Admin", "Branch_Manager"] },
+  { id: "highlights", label: "Highlights", icon: SparklesIcon, roles: ["Admin"]  },
+  { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin"]  },
+];
+
   const handleLogout = async () => {
     try {
       await logout();
-      // Navigation should be handled by a parent component that listens to the
-      // isAuthenticated state, but if you need it here, you can add it back.
-      // navigate('/login');
     } catch (error) {
       console.error("Failed to logout:", error);
-      // Optionally, show an error toast to the user
     }
   };
 
@@ -60,7 +52,9 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
 
       {/* ✅ Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        {navItems.map((item) => {
+        {navItems
+        .filter((item) => item.roles.includes(user?.role ?? ""))
+        .map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (

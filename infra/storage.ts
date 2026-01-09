@@ -49,6 +49,40 @@ export function StorageStack() {
     },
   });
 
+  const branchManagerTable = new sst.aws.Dynamo("BranchManager", {
+    fields: {
+      PK: "string",
+      SK: "string",
+
+      userId: "string",
+      email: "string",
+      status: "string",
+    },
+
+    primaryIndex: {
+      hashKey: "PK",
+      rangeKey: "SK",
+    },
+
+    globalIndexes: {
+      // 🔑 Auth lookup: user → branch
+      userIndex: {
+        hashKey: "userId",
+      },
+
+      // Admin: list all branch managers
+      managerIndex: {
+        hashKey: "email",
+      },
+
+      // Optional: list managers by status (ACTIVE / DISABLED)
+      statusIndex: {
+        hashKey: "status",
+      },
+    },
+  });
+
+
   const categoryTable = new sst.aws.Dynamo("Category", {
     fields: {
       categoryId: "string",
@@ -219,6 +253,7 @@ export function StorageStack() {
       notes: notesTable,
       activityLog: activityLogTable,
       branch: branchTable,
+      branchManager: branchManagerTable,
       category: categoryTable,
       item: itemTable,
       log: logTable,

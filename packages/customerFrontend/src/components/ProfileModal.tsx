@@ -482,7 +482,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <p className="font-bold text-gray-900">
-                          Order # {order.id.slice(6, 19)}
+                          {order.id.slice(-12)} 
                         </p>
                         <p className="text-sm text-gray-500">
                           {new Date(order.date).toLocaleDateString("id-ID", {

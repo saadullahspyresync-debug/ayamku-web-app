@@ -13,8 +13,8 @@ export default $config({
   async run() {
     // Dynamic imports for all stack files
     const { StorageStack } = await import("./infra/storage");
-     await import("./infra/auth");
-      const email = await import("./infra/email");
+    const auth =  await import("./infra/auth");
+    const email = await import("./infra/email");
     const { ApiStack } = await import("./infra/api");
     const { WebStack } = await import("./infra/web");
      const { MonitoringStack } = await import("./infra/monitoring");
@@ -29,7 +29,9 @@ export default $config({
     
     // 3. Create API (depends on Storage and Auth)
     // This call passes the result from AuthStack directly.
-    const api = ApiStack(storage, emailStack);
+    // const api = ApiStack(storage, emailStack);
+    const api = ApiStack(storage, auth.AuthResources, emailStack);
+
     
     // 4. Create Web (depends on all others to get output URLs/variables)
     // Deploy two frontends (customer + admin)

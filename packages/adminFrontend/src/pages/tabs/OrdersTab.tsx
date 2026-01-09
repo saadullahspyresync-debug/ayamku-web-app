@@ -1,5 +1,3 @@
-// src/pages/tabs/OrdersTab.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   deleteOrder,
@@ -16,8 +14,12 @@ import { toast } from "sonner";
 import OrderStats from "../../components/orders/OrderStats";
 import OrderFilters from "../../components/orders/OrderFilters";
 import { getAllBranches } from "../../api/branch";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function OrdersTab() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -49,7 +51,7 @@ export default function OrdersTab() {
       const { data } = await getAllBranches();
       setBranches(data.data);
     } catch (err) {
-      console.error(err);
+      // console.log(err);
     }
   };
 
@@ -65,16 +67,18 @@ export default function OrdersTab() {
       if (statusFilter !== "all") {
         params.status = statusFilter;
       }
-      if (branchFilter !== "all") {
+
+      if (isAdmin && branchFilter !== "all") {
         params.branchId = branchFilter;
       }
+
 
       const response = await getAllOrders(params);
 
       setOrders(response.orders);
       setTotalOrders(response.total);
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      // console.log("Error fetching orders:", error);
       toast.error("Failed to load orders");
     } finally {
       setLoading(false);
@@ -82,20 +86,30 @@ export default function OrdersTab() {
   };
 
   // Fetch stats
-  const fetchStats = async () => {
-    try {
-      const statsData = await getOrderStats();
-      setStats(statsData);
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
-  };
+    const fetchStats = async () => {
+      try {
+        const params: any = {};
+
+        if (isAdmin && branchFilter !== "all") {
+          params.branchId = branchFilter;
+        }
+
+        const statsData = await getOrderStats(params);
+        setStats(statsData);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
   useEffect(() => {
     fetchOrders();
     fetchStats();
-    fetchBranches();
-  }, [currentPage, statusFilter, branchFilter]);
+
+    if (isAdmin) {
+      fetchBranches();
+    }
+  }, [currentPage, statusFilter, branchFilter, isAdmin]);
+
 
   // Handle view order details
   const handleViewOrder = async (orderId: string) => {
@@ -105,7 +119,7 @@ export default function OrdersTab() {
       setSelectedOrder(order);
       setIsDetailsModalOpen(true);
     } catch (error) {
-      console.error("Error fetching order details:", error);
+      // console.log("Error fetching order details:", error);
       toast.error("Failed to load order details");
     }
   };
@@ -127,7 +141,7 @@ export default function OrdersTab() {
         setSelectedOrder(updatedOrder);
       }
     } catch (error) {
-      console.error("Error updating order status:", error);
+      // console.log("Error updating order status:", error);
       toast.error("Failed to update order status");
     }
   };
@@ -145,7 +159,7 @@ export default function OrdersTab() {
       fetchStats();
       setIsDetailsModalOpen(false);
     } catch (error) {
-      console.error("Error deleting order:", error);
+      // console.log("Error deleting order:", error);
       toast.error("Failed to delete order");
     }
   };
@@ -161,21 +175,10 @@ export default function OrdersTab() {
       const updatedOrder = await getOrderById(orderId);
       setSelectedOrder(updatedOrder);
     } catch (error) {
-      console.error("Error updating order:", error);
+      // console.log("Error updating order:", error);
       toast.error("Failed to update order");
     }
   };
-
-  // Filter orders by search query
-  //   const filteredOrders = orders.filter((order) => {
-  //     const query = searchQuery.toLowerCase();
-  //     return (
-  //       order.customerName.toLowerCase().includes(query) ||
-  //       order.customerEmail.toLowerCase().includes(query) ||
-  //       order.customerPhone.includes(query) ||
-  //       order.id.toLowerCase().includes(query)
-  //     );
-  //   });
 
   return (
     <div className="space-y-6">
@@ -184,14 +187,16 @@ export default function OrdersTab() {
 
       {/* Filters Section */}
       <OrderFilters
-        branches={branches}
+        branches={isAdmin ? branches : []}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
         branchFilter={branchFilter}
         setBranchFilter={setBranchFilter}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        hideBranchFilter={!isAdmin}
       />
+
 
       {/* Orders Table */}
       <div className="bg-white rounded-lg shadow">
