@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { X, CreditCard, Loader2, Shield } from "lucide-react";
 import { Button } from "./ui/button";
+
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/services/api";
+import { useCartStore } from "@/store/cartStore";
+import { useBranchStore } from "@/store/branchStore";
 
 interface PaymentFormProps {
   amount: number;
@@ -44,38 +47,47 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { user } = useAuth();
-
+  const { items, typeOfOrder, arrivalTime, specialInstruction } = useCartStore();
+  const branchId = useBranchStore.getState().selectedBranch?.branchId;
+  
   const handleSecurePayment = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const orderId = `ORDER-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
+      // 1. Prepare the payload for the backend
+      const checkoutPayload = {
+        cartItems: items.map((item) => ({
+          itemId: item.itemId,
+          quantity: item.quantity,
+        })),
+        orderMetadata: {
+          userId: user?.userId,
+          email: user?.email,
+          orderType: typeOfOrder,
+          branchId: branchId,
+          scheduledTime: arrivalTime,
+          specialInstructions: specialInstruction,
+          currency: "BND", // or your default
+          paymentMethod: "cybersource",
+        }
+      };
 
-      // 1. Call your backend to get the signed parameters
-      const { data } = await api.post("/secure-acceptance", {
-        amount: amount.toFixed(2),
-        currency,
-        orderId,
-      });
+      // 2. Call your backend to get the signed parameters
+      const { data } = await api.post("/secure-acceptance", checkoutPayload);
 
-      // Store order details in sessionStorage for when user returns
+      // 3. Store the orderId in sessionStorage for tracking
       sessionStorage.setItem(
         "pendingOrder",
         JSON.stringify({
-          orderId,
-          amount,
-          currency,
+          orderId: data.params.reference_number,
           timestamp: Date.now(),
         })
       );
 
-      // 2. ✅ Use the helper function to POST the data to CyberSource
+      // 4. ✅ Use the helper function to POST the data to CyberSource
       postToCybersource(data.paymentUrl, data.params);
     } catch (err) {
-      console.error("Payment error:", err);
       setError(err.message || "Failed to initiate payment");
       setLoading(false);
     }

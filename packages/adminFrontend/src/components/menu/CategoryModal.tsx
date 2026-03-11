@@ -9,6 +9,7 @@ type CategoryModalProps = {
   setForm: React.Dispatch<React.SetStateAction<CategoryForm>>;
   onSave: () => void;
   isEditing: boolean;
+  isSave: boolean;
 };
 
 export const CategoryModal = ({
@@ -18,17 +19,18 @@ export const CategoryModal = ({
   setForm,
   onSave,
   isEditing,
+  isSave,
 }: CategoryModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h3 className="text-lg font-semibold mb-4">
+      <h3 className="text-lg font-semibold mb-4 flex justify-center">
         {isEditing ? "Edit Category" : "Add Category"}
       </h3>
 
       {/* Name */}
       <div className="mb-3">
         <label htmlFor="categoryName" className="block text-sm font-medium mb-1">
-          Category Name
+          Category Name <span className="text-red-500">*</span>
         </label>
         <input
           id="categoryName"
@@ -57,7 +59,7 @@ export const CategoryModal = ({
 
       {/* Image Upload */}
       <div className="mb-3">
-        <label className="block text-sm font-medium mb-1">Upload Category Image</label>
+        <label className="block text-sm font-medium mb-1">Upload Category Image <span className="text-red-500">*</span></label>
         <input
           type="file"
           accept="image/*"
@@ -89,7 +91,7 @@ export const CategoryModal = ({
       {/* Status */}
       <div className="mb-3">
         <label htmlFor="categoryStatus" className="block text-sm font-medium mb-1">
-          Status
+          Status <span className="text-red-500">*</span>
         </label>
         <select
           id="categoryStatus"
@@ -108,7 +110,7 @@ export const CategoryModal = ({
           onClick={onSave}
           className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          {isEditing ? "Save Changes" : "Add Category"}
+          {isEditing ? isSave ? "Saving..." : "Save" : isSave ? "Adding..." : "Add"}
         </button>
         <button
           onClick={onClose}

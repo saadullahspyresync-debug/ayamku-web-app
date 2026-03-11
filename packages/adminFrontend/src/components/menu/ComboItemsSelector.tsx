@@ -34,7 +34,7 @@ export const ComboItemSelector = ({
 
   return (
     <div className="mb-3">
-      <label className="block font-medium text-sm mb-1">Select Items for Combo</label>
+      <label className="block font-medium text-sm mb-1">Select Items for Combo <span className="text-red-500">*</span></label>
       <div className="max-h-60 overflow-y-auto space-y-2">
         {menuItems
           .filter((item) => item.stockStatus === "in-stock")
@@ -50,7 +50,7 @@ export const ComboItemSelector = ({
                 className="flex justify-between items-center p-2 border rounded hover:bg-gray-50"
               >
                 <span>
-                  {item.name} —{" "}
+                  {item.name}
                   <span className="text-xs text-gray-500">{categoryName}</span>
                 </span>
                 {existing ? (

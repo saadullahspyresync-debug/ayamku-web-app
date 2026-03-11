@@ -36,7 +36,7 @@ export const HighlightModal = ({
       <div className="space-y-3">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
+          <label className="block text-sm font-medium mb-1">Title <span className="text-red-500">*</span></label>
           <input
             className="w-full border rounded-md p-2"
             placeholder="Enter title"
@@ -92,7 +92,7 @@ export const HighlightModal = ({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Start Date
+              Start Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
@@ -108,7 +108,7 @@ export const HighlightModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">End Date</label>
+            <label className="block text-sm font-medium mb-1">End Date <span className="text-red-500">*</span></label>
             <input
               type="date"
               className="w-full border rounded-md p-2"
@@ -173,7 +173,7 @@ export const HighlightModal = ({
           disabled={saving}
           className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md disabled:opacity-50 transition"
         >
-          {saving ? "Saving..." : isEditing ? "Save Changes" : "Add Highlight"}
+          {saving ? "Saving..." : isEditing ? "Save" : "Add"}
         </button>
         <button
           onClick={onClose}

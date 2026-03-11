@@ -4,7 +4,7 @@ type TabButtonsProps = {
 };
 
 export const TabButtons = ({ activeTab, onTabChange }: TabButtonsProps) => {
-  const tabs = ["items", "categories", "deals"];
+  const tabs = ["categories", "items", "deals"];
 
   return (
     <div className="flex gap-4 border-b pb-2">

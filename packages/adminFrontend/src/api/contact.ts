@@ -2,6 +2,7 @@ import api from "./api";
 
 export interface ContactFormMessage {
   _id?: string;
+  branchId?: string;
   name: string;
   email: string;
   subject?: string;
@@ -34,8 +35,17 @@ export const updateContactMessage = (
   });
 
 // DELETE a contact form message by ID (admin only)
-export const deleteContactMessage = (id: string) =>
-  api.delete(`/admin/contact/${id}`);
+export const deleteContactMessage = (id: string) => api.delete(`/admin/contact/${id}`);
+
+// Send a reply to a contact form message
+export const sendAdminReply = (email: string, subject: string, replyText: string) => {
+  const resp = api.post(`/admin/sendMail`, {
+    email,
+    subject,
+    replyText
+  });
+  return resp;
+}
 
 export default {
   getAllContactMessages,
@@ -43,4 +53,5 @@ export default {
   createContactMessage,
   updateContactMessage,
   deleteContactMessage,
+  sendAdminReply,
 };

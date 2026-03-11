@@ -9,7 +9,7 @@ type ImageUploadProps = {
 export const ImageUpload = ({ label, preview, onChange }: ImageUploadProps) => {
   return (
     <div className="mb-2">
-      <label className="block text-sm font-medium mb-1">{label}</label>
+      <label className="block text-sm font-medium mb-1">{label} <span className="text-red-500">*</span></label>
       {preview && (
         <img
           src={preview}

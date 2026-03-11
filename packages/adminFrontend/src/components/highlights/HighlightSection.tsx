@@ -59,12 +59,7 @@ export const HighlightSection = ({
     setHighlightOpen(true);
   };
 
-  const handleSaveHighlight = async () => {
-    if (!highlightForm.title) {
-      alert("Title is required");
-      return;
-    }
-
+  const handleSaveHighlight = async () => {  
     try {
       setSaving(true);
       let image = highlightForm.image;
@@ -85,6 +80,11 @@ export const HighlightSection = ({
         status: highlightForm.status,
         branchIds: highlightForm.branchIds,
       };
+
+      if (!payload.title || !payload.image || !payload.startDate || !payload.endDate || payload.branchIds.length === 0) {
+        alert("Please fill in all required fields!");
+        return;
+      }
 
       if (editingHighlight) {
         await seasonalHighlightsApi.updateSeasonalHighlight(
@@ -133,7 +133,7 @@ export const HighlightSection = ({
           onClick={openAddHighlight}
           className="px-4 py-2 bg-yellow-500 text-white rounded"
         >
-          Add Highlights
+          + Add Highlights
         </button>
       </div>
 

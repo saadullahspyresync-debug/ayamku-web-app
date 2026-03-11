@@ -67,6 +67,7 @@ export async function main(event: APIGatewayProxyEvent) {
         UserAttributes: [
           { Name: "email", Value: email },
           { Name: "email_verified", Value: "true" },
+          { Name: "custom:branchId", Value: branchId },
         ],
       })
     );
@@ -87,15 +88,15 @@ export async function main(event: APIGatewayProxyEvent) {
       })
     );
 
-    await cognito.send(
-      new AdminUpdateUserAttributesCommand({
-        UserPoolId: Resource.UserPool.id,
-        Username: email,
-        UserAttributes: [
-          { Name: "custom:branchId", Value: branchId },
-        ],
-      })
-    );
+    // await cognito.send(
+    //   new AdminUpdateUserAttributesCommand({
+    //     UserPoolId: Resource.UserPool.id,
+    //     Username: email,
+    //     UserAttributes: [
+    //       { Name: "custom:branchId", Value: branchId },
+    //     ],
+    //   })
+    // );
 
     /* =========================
        4. Save Metadata to DynamoDB
@@ -135,7 +136,6 @@ export async function main(event: APIGatewayProxyEvent) {
       }),
     };
   } catch (error: any) {
-    console.error("Create Branch Manager Error:", error);
 
     return {
       statusCode: 500,

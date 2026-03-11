@@ -54,7 +54,7 @@ const BranchManagerTab = () => {
           const { data } = await getAllBranches();
           setBranches(data.data);
         } catch (err) {
-          console.error(err);
+          throw err;
         }
     };
 
@@ -93,7 +93,7 @@ const BranchManagerTab = () => {
             setBranchManagers(managersWithBranch);
         } 
         catch (error) {
-            console.log("fetching branch managers error", error);
+            throw error;
         }
         finally {
             setPageLoading(false);
@@ -107,10 +107,11 @@ const BranchManagerTab = () => {
 
         // 2. Check for empty fields
         if (!cleanEmail || !branchId) {
-            setError("Email and Branch are required");
-            setTimeout(() => {
-                setError("")
-            }, 3000);
+            // setError("Email and Branch are required");
+            // setTimeout(() => {
+            //     setError("")
+            // }, 3000);
+            alert("Email and Branch are required");
             return;
         }
 
@@ -137,26 +138,26 @@ const BranchManagerTab = () => {
             fetchBranchManagers();
         } 
         catch (err: any) {
-            setError("Failed to create branch manager");
+            setError(err.response?.data?.error);
             setTimeout(() => {
                 setError("")
-            }, 3000);
+            }, 3000);            
         } 
         finally {
             setPageLoading(false);
         }
     };
 
-    const onDeleteManager = async (id: string) => {
-        if (!window.confirm("Delete this Branch Manager?")) return
+    // const onDeleteManager = async (id: string) => {
+    //     if (!window.confirm("Delete this Branch Manager?")) return
 
-        try {
-            await deleteBranchManager(id);
-            fetchBranchManagers();
-        } catch (error) {
-            alert("Failed to delete Branch Manager");
-        }
-    }
+    //     try {
+    //         await deleteBranchManager(id);
+    //         fetchBranchManagers();
+    //     } catch (error) {
+    //         alert("Failed to delete Branch Manager");
+    //     }
+    // }
 
     const disableBranchManager = async (email: string) => {
         if (!window.confirm("Disable this Branch Manager?")) return;
@@ -168,8 +169,9 @@ const BranchManagerTab = () => {
         } 
         catch {
             alert("Failed to disable Branch Manager");
+        } finally {
+            setActionLoading(null);
         }
-        setActionLoading(null)
     };
 
     const enableBranchManager = async (email: string) => {
@@ -189,12 +191,13 @@ const BranchManagerTab = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-bold text-gray-800">Branch Manager</h3>
-                <button
+                {!pageLoading &&
+                    <button
                     onClick={openAdd}
                     className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
                     >
-                    {pageLoading ? "Loading..." : "+ Add Manager"}                          
-                </button>
+                    + Add Manager                        
+                </button>}
             </div>
 
             {pageLoading ? (
@@ -245,13 +248,13 @@ const BranchManagerTab = () => {
                                     {actionLoading === bm.email ? "Enabling..." : "Enable"}
                                 </button>
                                 )}
-                                <button
+                                {/* <button
                                     onClick={() => onDeleteManager(bm?.userId)}
                                     className="text-red-600 hover:text-red-900"
                                     title="Delete Order"
                                     >
                                         <Trash2 className="w-7 h-7" />
-                                </button>
+                                </button> */}
                             </td>
                             </tr>
                         ))}                    
@@ -261,7 +264,7 @@ const BranchManagerTab = () => {
 
             {/* Branch Modal */}
             <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-lg font-semibold mb-4 flex justify-center">
                     {editingId ? "Edit Branch Manager" : "Add New Branch Mananger"}
                 </h3>
 

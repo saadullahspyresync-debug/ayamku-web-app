@@ -63,7 +63,7 @@ const Login: React.FC = () => {
       // } else {
       // window.location.href = "http://localhost:5173/";
       // }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
 
       // Handle the specific case where user needs to verify email

@@ -98,7 +98,7 @@ export const FilterBar = ({
                     <TabsTrigger
                       key={category}
                       value={category}
-                      className="data-[state=active]:bg-ayamku-primary data-[state=active]:text-white whitespace-nowrap px-6 py-2.5 text-sm font-medium transition-all"
+                      className="data-[state=active]:bg-ayamku-primary data-[state=active]:text-white whitespace-nowrap px-6 py-2 text-sm font-medium transition-all"
                     >
                       {category === "All" ? t("categories.all") : category}
                     </TabsTrigger>

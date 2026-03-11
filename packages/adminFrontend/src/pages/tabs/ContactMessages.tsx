@@ -5,17 +5,28 @@ import {
   updateContactMessage,
   deleteContactMessage,
   ContactFormMessage,
+  sendAdminReply,
 } from "../../api/contact";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const ContactMessages: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+  const managerBranchId = user?.branchId;
+
   const [messages, setMessages] = useState<ContactFormMessage[]>([]);
-  const [selectedMessage, setSelectedMessage] =
-    useState<ContactFormMessage | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<ContactFormMessage | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   const unreadCount = messages.filter((m) => m.status === "new").length;
   const totalCount = messages.length;
+
+  
 
   // Fetch all contact messages
   useEffect(() => {
@@ -23,8 +34,10 @@ export const ContactMessages: React.FC = () => {
       try {
         setLoading(true);
         const res = await getAllContactMessages();
-        const normalized: ContactFormMessage[] = res.data.data.map((msg: any) => ({
+        
+        const normalized: ContactFormMessage[] = res.data?.data.map((msg: any) => ({
           _id: msg._id || msg.id,
+          branchId: msg.branchId,
           name: msg.name || `${msg.firstName || "Unknown"} ${msg.lastName || ""}`,
           email: msg.email,
           subject: msg.subject || "",
@@ -33,10 +46,19 @@ export const ContactMessages: React.FC = () => {
           submittedAt: msg.submittedAt,
           updatedAt: msg.updatedAt,
         }));
-        setMessages(normalized);
+
+        // --- 2. FILTER LOGIC ---
+        if (isAdmin) {
+          setMessages(normalized);
+        } else {
+          setMessages(normalized.filter((msg) => msg.branchId === managerBranchId));
+        }
+
       } catch (err) {
-        console.error("Failed to fetch contact messages:", err);
         setError("Failed to load contact messages.");
+        setTimeout(() => {
+          setError(null);
+        }, 3000);
       } finally {
         setLoading(false);
       }
@@ -64,6 +86,8 @@ export const ContactMessages: React.FC = () => {
 
   // Mark a message as pending when clicked
   const markAsPending = (msg: ContactFormMessage) => {
+    setIsReplying(false);
+    setReplyText("");
     if (msg.status === "new") {
       updateStatus(msg._id!, "pending");
       setSelectedMessage({ ...msg, status: "pending" });
@@ -87,6 +111,27 @@ export const ContactMessages: React.FC = () => {
     } catch (err) {
       console.error("Failed to delete message:", err);
       alert("Failed to delete message.");
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedMessage) return;
+    
+    setIsSending(true);
+    try {
+      await sendAdminReply(
+        selectedMessage.email,
+        selectedMessage?.subject!,
+        replyText
+      );
+      alert("Reply sent successfully!");
+      setIsReplying(false);
+      setReplyText("");
+      // markResolved(selectedMessage?._id!); // Optional: Mark resolved after reply
+    } catch (error: any) {
+      alert("Failed to send reply: " + error.message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -149,9 +194,11 @@ export const ContactMessages: React.FC = () => {
         </div>
 
         {/* Message Details */}
+      
         <div className="col-span-2">
           {selectedMessage ? (
             <div className="p-6 border rounded-lg shadow-lg bg-white">
+              {/* 1. Original Message Display (Keep this visible always) */}
               <h2 className="text-2xl font-semibold mb-4">{selectedMessage.subject}</h2>
               <p className="mb-2">
                 <strong>From:</strong> {selectedMessage.name}
@@ -159,45 +206,89 @@ export const ContactMessages: React.FC = () => {
               <p className="mb-2">
                 <strong>Email:</strong> {selectedMessage.email}
               </p>
+              
+              {/* This is the part that was missing in the previous snippet */}
               {selectedMessage.message && (
-                <p className="mb-4 whitespace-pre-wrap">{selectedMessage.message}</p>
+                <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-100 italic text-gray-700 whitespace-pre-wrap">
+                  "{selectedMessage.message}"
+                </div>
               )}
-              <p className="text-sm text-gray-500 mb-4">
+              
+              <p className="text-sm text-gray-500 my-4">
                 Submitted: {new Date(selectedMessage.submittedAt || "").toLocaleString()}
               </p>
 
-              <div className="flex gap-3 flex-wrap">
-                {selectedMessage.status !== "resolved" && (
+              <hr className="my-6 border-gray-100" />
+
+              {/* 2. Toggle between Action Buttons and Reply Form */}
+              {isReplying ? (
+                <div className="mt-4 p-5 bg-blue-50 rounded-xl border border-blue-100 shadow-inner">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-blue-800">Compose Reply</h3>
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">Sending as support@ayamkubrunei.com</span>
+                  </div>
+                  
+                  <textarea
+                    className="w-full p-4 border border-blue-200 rounded-lg h-40 mb-4 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                    placeholder="Hi, thanks for reaching out to Ayamku..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                  />
+                  
+                  <div className="flex gap-3">
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6" 
+                      onClick={handleSendReply}
+                      disabled={isSending || !replyText.trim()}
+                    >
+                      {isSending ? "Sending..." : "Send Official Reply"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-gray-300"
+                      onClick={() => {
+                        setIsReplying(false);
+                        setReplyText("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* 3. Original Action Buttons */
+                <div className="flex gap-3 flex-wrap">
+                  {selectedMessage.status !== "resolved" && (
+                    <Button
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => markResolved(selectedMessage._id!)}
+                    >
+                      Mark as Resolved
+                    </Button>
+                  )}
+                  
                   <Button
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => markResolved(selectedMessage._id!)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={() => setIsReplying(true)}
                   >
-                    Mark as Resolved
+                    Reply via Support Email
                   </Button>
-                )}
-                <Button
-                  className="bg-red-500 hover:bg-red-600 text-white"
-                  onClick={() => deleteMessage(selectedMessage._id!)}
-                >
-                  Delete
-                </Button>
-                <Button
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                  onClick={() =>
-                    window.open(
-                      `mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(
-                        selectedMessage.subject
-                      )}`
-                    )
-                  }
-                >
-                  Reply via Email
-                </Button>
-              </div>
+
+                  <Button
+                    className="bg-red-500 hover:bg-red-600 text-white"
+                    onClick={() => deleteMessage(selectedMessage._id!)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="p-6 border rounded-lg shadow-lg bg-white text-gray-500 flex items-center justify-center h-full">
-              Select a message to view details
+            <div className="p-6 border rounded-lg shadow-lg bg-white text-gray-500 flex items-center justify-center h-full text-center">
+              <div>
+                <div className="text-4xl mb-2">📩</div>
+                <p>Select a message from the list to view details and reply.</p>
+              </div>
             </div>
           )}
         </div>

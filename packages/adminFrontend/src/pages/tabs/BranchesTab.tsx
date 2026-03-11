@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Modal from "../../components/Modal";
 import MapPicker from "../../components/MapPicker";
 import {
@@ -26,12 +26,13 @@ export default function BranchesTab() {
     },
     services: { dineIn: true, pickup: true },
     status: "active",
-    coordinates: { lat: null, lng: null },
+    coordinates: { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
   };
 
   const [branches, setBranches] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSave, setIsSave] = useState<string | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -52,7 +53,6 @@ export default function BranchesTab() {
         setBranches(filtered);
       }
     } catch (err) {
-      console.error(err);
       setError("Failed to fetch branches.");
       setTimeout(() => {
         setError("")
@@ -67,13 +67,24 @@ export default function BranchesTab() {
   }, []);
 
   const openAdd = () => {
+    setIsSave("Add")
     setEditingId(null);
     setForm(emptyBranch);
     setIsOpen(true);
   };
 
+  const handleLocationSelect = (location: { address: string, lat: number, lng: number, placeId: string }) => {
+    setForm((prev: any) => ({
+      ...prev,
+      address: location.address,
+      placeId: location.placeId,
+      coordinates: { lat: location.lat, lng: location.lng }
+    }));
+  };
+
   const openEdit = (branch: any) => {
-    setEditingId(branch._id);
+    setEditingId(branch.branchId);
+    setIsSave("Save")
     // Ensure backward compatibility if friday hours don’t exist
     const updatedBranch = {
       ...branch,
@@ -92,32 +103,48 @@ export default function BranchesTab() {
 
   const handleSave = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
+      
+      if(!form.name || !form.contactNumber || !form.businessHours.open || !form.businessHours.close || (!form.services.dineIn && !form.services.pickup) ||
+      !form.businessHours.friday.isClosed && (!form.businessHours.friday.open || !form.businessHours.friday.close)) {
+        alert("Please fill in all required fields.");
+        setLoading(false);
+        setIsSave(null);
+        return;
+      }
+      if(!form.address){
+        alert("Please do not fill address manually. Drag the marker or click on map to select address.");
+        setLoading(false);
+        setIsSave(null);
+        return;
+      }
+
       if (editingId) {
-        await updateBranch(editingId, form);
+        const { branchId, createdAt, ...payload } = form;
+        await updateBranch(editingId, payload);
       } else {
         await createBranch(form);
       }
-      setIsOpen(false);
       fetchBranches();
-    } 
-    catch (err) {
-      console.error(err);
+      setIsOpen(false);
+    } catch (err) {
       setError("Failed to save branch.");
-    }
-    finally {
-      setLoading(false)
+    } finally {
+      setLoading(false);
+      setIsSave(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this branch?")) return;
     try {
+      setLoading(true)
       await deleteBranch(id);
       fetchBranches();
     } catch (err) {
-      console.error(err);
       setError("Failed to delete branch.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,25 +176,27 @@ export default function BranchesTab() {
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-gray-800">{isAdmin ? "Branches" : "My Branch"}</h3>
         {/* --- 3. HIDE ADD BUTTON FOR MANAGERS --- */}
-        {isAdmin && (
+        {isAdmin && !loading &&(
           <button
             onClick={openAdd}
             className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
           >
-            {loading ? "Loading..." : "+ Add Branch"}
+            + Add Branch
           </button>
         )}
       </div>
 
-      {error && <p className="text-red-600">{error}</p>}
-
       {loading ? (
         < Loader tab="branches" />
-      ) : (
+      ) : branches.length === 0 ? (
+          <div className="text-center py-10 text-gray-500">
+              No branch found.
+          </div>
+      ): (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {branches.map((branch: any) => (
             <div
-              key={branch._id}
+              key={branch.branchId}
               className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition p-5"
             >
               <h4 className="text-xl font-semibold text-gray-800">
@@ -212,7 +241,7 @@ export default function BranchesTab() {
                 {/* --- 4. HIDE DELETE BUTTON FOR MANAGERS --- */}
                 {isAdmin && (
                   <button
-                    onClick={() => handleDelete(branch._id)}
+                    onClick={() => handleDelete(branch.branchId)}
                     className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm"
                   >
                     Delete
@@ -226,7 +255,7 @@ export default function BranchesTab() {
 
       {/* Branch Modal */}
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-semibold mb-4 flex justify-center">
           {editingId ? "Edit Branch" : "Add New Branch"}
         </h3>
 
@@ -234,7 +263,7 @@ export default function BranchesTab() {
           {/* Branch Name */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Branch Name:
+              Branch Name: <span className="text-red-500">*</span>
             </label>
             <input
               className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -244,21 +273,20 @@ export default function BranchesTab() {
             />
           </div>
 
-          {/* Address */}
+          {/* GOOGLE MAPS PICKER */}
           <div>
-            <label className="block text-sm font-medium mb-1">Address:</label>
-            <input
-              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              placeholder="Address"
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            <label className="block text-sm font-medium mb-1">Address: <span className="text-red-500">*</span></label>
+            <MapPicker 
+              initialAddress={form.address}
+              initialCoords={form.coordinates}
+              onLocationSelect={handleLocationSelect}
             />
           </div>
 
           {/* Contact Number */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Contact Number:
+              Contact Number: <span className="text-red-500">*</span>
             </label>
             <input
               className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -272,7 +300,7 @@ export default function BranchesTab() {
 
           {/* Regular Business Hours */}
           <div>
-            <p className="text-sm font-medium mb-1">Regular Hours:</p>
+            <p className="text-sm font-medium mb-1">Regular Hours: <span className="text-red-500">*</span></p>
             <div className="flex gap-3">
               <input
                 type="time"
@@ -307,7 +335,7 @@ export default function BranchesTab() {
 
           {/* Friday Hours */}
           <div>
-            <p className="text-sm font-medium mb-1">Friday Hours:</p>
+            <p className="text-sm font-medium mb-1">Friday Hours: <span className="text-red-500">*</span></p>
             <label className="flex items-center gap-2 mb-2">
               <input
                 type="checkbox"
@@ -359,7 +387,7 @@ export default function BranchesTab() {
 
           {/* Services */}
           <div>
-            <p className="text-sm font-medium mb-1">Services:</p>
+            <p className="text-sm font-medium mb-1">Services: <span className="text-red-500">*</span></p>
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2">
                 <input
@@ -381,7 +409,7 @@ export default function BranchesTab() {
           </div>
 
           {/* Map */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium mb-1">
               Location on Map:
             </label>
@@ -392,7 +420,7 @@ export default function BranchesTab() {
               }
               onAddressChange={(e: any) => setForm({ ...form, address: e })}
             />
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
@@ -400,7 +428,7 @@ export default function BranchesTab() {
               onClick={handleSave}
               className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
             >
-              {loading ? "Saving..." : "Save"}
+              {isSave === "Save" ? loading ? "Saving..." : "Save" : isSave === "Add" ? loading ? "Adding..." : "Add" : "Save"}
             </button>
             <button
               onClick={() => setIsOpen(false)}

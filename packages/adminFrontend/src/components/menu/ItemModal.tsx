@@ -13,6 +13,7 @@ type ItemModalProps = {
   branches: Branch[];
   onSave: () => void;
   isEditing: boolean;
+  isSave: boolean;
 };
 
 export const ItemModal = ({
@@ -24,17 +25,18 @@ export const ItemModal = ({
   branches,
   onSave,
   isEditing,
+  isSave
 }: ItemModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h3 className="text-lg font-semibold mb-4">
+      <h3 className="text-lg font-semibold mb-4 flex justify-center">
         {isEditing ? "Edit Item" : "Add Item"}
       </h3>
 
       {/* Item Name */}
       <div className="mb-3">
         <label htmlFor="itemName" className="block text-sm font-medium mb-1">
-          Item Name
+          Item Name <span className="text-red-500">*</span>
         </label>
         <input
           id="itemName"
@@ -49,7 +51,7 @@ export const ItemModal = ({
       {/* Category */}
       <div className="mb-3">
         <label htmlFor="category" className="block text-sm font-medium mb-1">
-          Category
+          Category <span className="text-red-500">*</span>
         </label>
         <select
           id="category"
@@ -69,7 +71,7 @@ export const ItemModal = ({
       {/* Price */}
       <div className="mb-3">
         <label htmlFor="price" className="block text-sm font-medium mb-1">
-          Price
+          Price <span className="text-red-500">*</span>
         </label>
         <input
           id="price"
@@ -128,7 +130,7 @@ export const ItemModal = ({
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>
           <label htmlFor="stockStatus" className="block text-sm font-medium mb-1">
-            Stock Status
+            Stock Status <span className="text-red-500">*</span>
           </label>
           <select
             id="stockStatus"
@@ -142,7 +144,7 @@ export const ItemModal = ({
         </div>
         <div>
           <label htmlFor="status" className="block text-sm font-medium mb-1">
-            Status
+            Status <span className="text-red-500">*</span>
           </label>
           <select
             id="status"
@@ -162,7 +164,7 @@ export const ItemModal = ({
           onClick={onSave}
           className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          {isEditing ? "Save Changes" : "Add"}
+          {isEditing ? isSave ? "Saving..." : "Save" : isSave ? "Adding..." : "Add"}
         </button>
         <button
           onClick={onClose}

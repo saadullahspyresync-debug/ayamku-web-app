@@ -1,5 +1,4 @@
-import * as pulumi from "@pulumi/pulumi"; // <--- 1. Import the Pulumi SDK
-
+import * as pulumi from "@pulumi/pulumi"; 
 
 export const userGroups = new sst.Linkable("UserGroups", {
   properties: {
@@ -11,17 +10,6 @@ export const userGroups = new sst.Linkable("UserGroups", {
 
 export const userPool = new sst.aws.CognitoUserPool("UserPool", {
   usernames: ["email"],
-  // triggers: {
-  //   postConfirmation: {
-  //     permissions: [
-  //       {
-  //         actions: ["*"],
-  //         resources: ["*"],
-  //       },
-  //     ],
-  //     handler: "packages/functions/src/postConfirmation.main",
-  //   },
-  // },login
   triggers: {
     postConfirmation: {
       handler: "packages/functions/src/postConfirmation.main",
@@ -35,7 +23,11 @@ export const userPool = new sst.aws.CognitoUserPool("UserPool", {
   },
   // ✅ Use the correct 'userPool' key within transform
   transform: {
-    userPool: (args) => {
+    userPool: (args, opts) => {
+
+      // This stops SST from fighting with the manual changes you made in the console.
+      // opts.ignoreChanges = ["schemas"];
+
       // 2. Safely combine existing schemas with your new custom attribute
       const existingSchemas = args.schemas || [];
       args.schemas = pulumi.all([existingSchemas]).apply(([schemas]) => [
@@ -63,11 +55,7 @@ Object.keys(userGroups.properties).forEach((role) => {
 
 // ✅ Define a user pool client with OAuth + secure auth flows
 export const userPoolClient = userPool.addClient("UserPoolClient", {
-  // You can add basic SST-level config here (like callback URLs, etc.)
-  // e.g. callbackUrls: ["http://localhost:3000"],
-
   transform: {
-    // ✅ Correct Pulumi-level override syntax
     client: {
       // These properties are passed through to the underlying AWS resource
       explicitAuthFlows: [

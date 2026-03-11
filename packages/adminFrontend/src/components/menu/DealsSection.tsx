@@ -35,6 +35,7 @@ export const DealsSection = ({
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<DealForm>(emptyDeal);
+  const [isSave, setIsSave] = useState(false);
 
   const openAdd = () => {
     setEditing(null);
@@ -65,7 +66,7 @@ export const DealsSection = ({
           : deal.categoryId || "",
       comboItems: existingComboItems,
       availableBranches:
-        deal.availableBranches?.map((b: any) => b._id || b) || [],
+        deal.availableBranches?.map((b: any) => b.branchId) || [],
       active: deal.status === "active" || deal.active || true,
       images: [],
       existingImages: deal.images || [],
@@ -75,6 +76,7 @@ export const DealsSection = ({
 
   const handleSave = async () => {
     try {
+      setIsSave(true);
       let uploadedImageUrls: string[] = [];
       if (form.images.length > 0) {
         uploadedImageUrls = await uploadImagesToS3(form.images);
@@ -98,11 +100,18 @@ export const DealsSection = ({
         availableBranches: form.availableBranches || [],
       };
 
+      if(!payload.name || !payload.categoryId || !payload.price || payload.images.length === 0 || payload.availableBranches.length === 0 || payload.comboItems.length === 0 || payload.images.length === 0) {
+        alert("Please fill in all required fields!");
+        setIsSave(false);
+        return;
+      }
+
       if (editing) await updateDeal(editing, payload);
       else await createDeal(payload);
 
       await onRefresh();
       setIsOpen(false);
+      setIsSave(false);
     } catch (err) {
       console.error("Save error:", err);
     }
@@ -126,7 +135,7 @@ export const DealsSection = ({
           onClick={openAdd}
           className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          Add Deal
+         + Add Deal
         </button>
       </div>
 
@@ -151,6 +160,7 @@ export const DealsSection = ({
         branches={branches}
         onSave={handleSave}
         isEditing={!!editing}
+        isSave={isSave}
       />
     </>
   );

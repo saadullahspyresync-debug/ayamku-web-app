@@ -1,18 +1,25 @@
 // packages/functions/src/secure-acceptance.ts
 import { APIGatewayProxyEvent } from "aws-lambda";
 import * as crypto from "crypto";
+import { Resource } from "sst";
+
+import { getProductFromDB, savePendingOrder, getPendingOrder } from "./lib/db";
+import { finalizeAndProcessOrder } from "./order/create";
 
 // Your Secure Acceptance Profile Credentials
-const PROFILE_ID = "620EDAB2-F985-4F1D-892F-7A4081C8C94F";
-const ACCESS_KEY = "700da333945031e8b8eb3620d3eb4b41";
-const SECRET_KEY = "d796a2630ee646f7af2e19ee6449042f69a2a784be3a4625987fdb9965fb2be060cf2c9a8fd840428f51a5fc7a97558ab317cb446b6b489eaf2e8d72e470f498dd95f85b2be440a19709d8e4e6bff8d93fba81bbbfd2471d9764e44058b3f1f428e05a7588cf41449c8059f83be6d9ff1eb12a0533fe42fca381bfb9227884e9";
-const PAYMENT_URL = "https://testsecureacceptance.cybersource.com/pay";
+
+const PROFILE_ID: string = Resource.CYBERSOURCE_MERCHANT_ID.value;
+const ACCESS_KEY: string = Resource.CYBERSOURCE_ACCESS_KEY.value;
+const SECRET_KEY: string = Resource.CYBERSOURCE_SECRET_KEY.value;
+
+const PAYMENT_URL: string = process.env.CYBERSOURCE_PAYMENT_URL!;
+const FRONTEND_URL: string = process.env.APP_FRONTEND_URL!;
+
 
 // ✅ FIXED: Update this to your actual API Gateway domain after deployment
-const PAYMENT_RECEIPT_URL = "https://e4girjfm00.execute-api.us-east-1.amazonaws.com/payment-receipt";
-// const FRONTEND_URL = "https://e4girjfm00.execute-api.us-east-1.amazonaws.com/payment-receipt";
+const BASE_API_URL: string = process.env.API_BASE_URL!;
+const PAYMENT_RECEIPT_URL = `${BASE_API_URL}/payment-receipt`; //Receipt URL must be whitelisted in CyberSource
 
-const FRONTEND_URL = "https://d2871ozn3su384.cloudfront.net";  // development
 
 interface PaymentParams {
   [key: string]: string;
@@ -28,6 +35,19 @@ function signData(params: PaymentParams, secretKey: string): string {
     .createHmac("sha256", secretKey)
     .update(dataToSign)
     .digest("base64");
+}
+
+// 1. Helper function to calculate total safely
+async function calculateSafeTotal(cartItems: any[]) {
+  let total = 0;
+  for (const item of cartItems) {    
+    // 🛡️ SECURITY: Fetch the price from YOUR DB, not from the request body
+    const product = await getProductFromDB(item.itemId); 
+    if (product) {
+      total += product.price * item.quantity;
+    }
+  }
+  return total;
 }
 
 export async function main(event: APIGatewayProxyEvent) {
@@ -58,15 +78,49 @@ export async function main(event: APIGatewayProxyEvent) {
       };
     }
 
+    // 1. Parse the request body
     const data = JSON.parse(event.body);
-    const { amount, currency = "BND", orderId, customerEmail, customerName } = data;
+    const { cartItems, orderMetadata } = data; // Received from PaymentForm.tsx
 
-    if (!amount || !orderId) {
+    // 2. Recalculate the amount server-side
+    const validatedAmount = await calculateSafeTotal(cartItems);
+    const amountStr = validatedAmount.toFixed(2);
+
+    // 3. Generate Order ID
+    const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    // 🛡️ RECORD EXPECTATION
+    try {
+      await savePendingOrder({
+        orderId,
+        status: "pending",
+        items: cartItems,
+        metadata: {
+          userId: orderMetadata.userId,
+          email: orderMetadata.email,
+          orderType: orderMetadata.orderType,
+          branchId: orderMetadata.branchId,
+          scheduledTime: orderMetadata.scheduledTime,
+          specialInstructions: orderMetadata.specialInstructions,
+          currency: orderMetadata.currency,
+          paymentMethod: orderMetadata.paymentMethod,
+
+          redemptionIds: orderMetadata.redemptionIds || [],
+          redemptionDiscount: orderMetadata.redemptionDiscount || 0,
+          subtotal: amountStr,
+          totalPrice: amountStr,
+        }
+      });
+    } catch (dbError) {
+      throw new Error("Internal server error: Could not record order.");
+    }
+
+    if (!amountStr) {
       return {
         statusCode: 400,
         headers: corsHeaders,
         body: JSON.stringify({
-          error: "Missing required fields: amount and orderId are required.",
+          error: "Missing required fields: amount is required.",
         }),
       };
     }
@@ -81,17 +135,18 @@ export async function main(event: APIGatewayProxyEvent) {
 
       // Must include ALL fields you're sending
       signed_field_names:
-        "access_key,profile_id,transaction_uuid,signed_field_names,unsigned_field_names,signed_date_time,locale,transaction_type,reference_number,amount,currency,override_custom_receipt_page",
+        "access_key,profile_id,transaction_uuid,signed_field_names,unsigned_field_names,signed_date_time,locale,transaction_type,reference_number,amount,currency,override_custom_receipt_page,override_custom_cancel_page",
 
       unsigned_field_names: "",
       signed_date_time: transactionTime,
       locale: "en",
       transaction_type: "sale",
       reference_number: orderId,
-      amount: amount,
-      currency: currency,
+      amount: amountStr,
+      currency: orderMetadata.currency || "BND",
 
       override_custom_receipt_page: PAYMENT_RECEIPT_URL,
+      override_custom_cancel_page: PAYMENT_RECEIPT_URL,
       // override_custom_receipt_page: `${FRONTEND_URL}#/payment-success`,
       // merchant_defined_data1: customerEmail || "",
       // merchant_defined_data1: PAYMENT_RECEIPT_URL || "",
@@ -165,16 +220,6 @@ export async function handlePaymentReceipt(event: APIGatewayProxyEvent) {
     }
     const params = parseFormEncoded(rawBody);
 
-    // const params: PaymentParams = {};
-
-    // const pairs = body.split("&");
-    // for (const pair of pairs) {
-    //   const [key, value] = pair.split("=");
-    //   if (key) {
-    //     params[decodeURIComponent(key)] = decodeURIComponent(value || "");
-    //   }
-    // }
-
     const decision = params.decision || "ERROR";
     const transactionId = params.transaction_id || "unknown";
     const orderId = params.req_reference_number || "unknown";
@@ -199,8 +244,6 @@ export async function handlePaymentReceipt(event: APIGatewayProxyEvent) {
           signatureValid = true;
         } else {
           console.error("⚠️ SIGNATURE MISMATCH - Possible tampering!");
-          console.log("Expected:", calculatedSignature);
-          console.log("Received:", receivedSignature);
         }
       } catch (err) {
         console.error("Error verifying signature:", err);
@@ -230,10 +273,41 @@ export async function handlePaymentReceipt(event: APIGatewayProxyEvent) {
       };
     }
 
+    // 3. Handle CANCELLATION (User clicked cancel on CyberSource)
+    if (decision === "CANCEL" || reasonCode === "400") {
+      return {
+        statusCode: 302,
+        headers: {
+          Location: `${FRONTEND_URL}/#/payment-failure?orderId=${orderId}&reason=${message}`,
+          "Cache-Control": "no-cache"
+        },
+        body: ""
+      };
+    }
+
     // ✅ Payment SUCCESSFUL
-    if (decision === "ACCEPT") {
+    if (decision === "ACCEPT" && reasonCode === "100" && signatureValid) {
+      
+      // 1. Fetch the PENDING order you saved in Step 1 (the checkout step)
+      const pendingOrder = await getPendingOrder(orderId);
+      if (!pendingOrder) {
+        return { statusCode: 404, body: "Order not found" };
+      }
+
+      // 2. SECURITY: Compare amounts (authAmount from CyberSource vs amount in DB)
+      if (parseFloat(authAmount) !== parseFloat(pendingOrder.totalPrice)) {
+        return { statusCode: 400, body: "Amount mismatch" };
+      }
+
+      // 🚀 THE BIG PATCH: Call your business logic from create.ts
+      try {
+        await finalizeAndProcessOrder(orderId, transactionId);
+      } catch (err) {
+        console.error("Business logic failed, but payment was successful:", err);
+      }
+
       // Redirect to success page
-      const redirectUrl = `${FRONTEND_URL}/#/payment-success?orderId=${orderId}&transactionId=${transactionId}&amount=${authAmount}&currency=${currency}&decision=${decision}`;
+      const redirectUrl = `${FRONTEND_URL}/#/payment-success?orderId=${orderId}&decision=${decision}`;
 
       return {
         statusCode: 302,
@@ -247,19 +321,14 @@ export async function handlePaymentReceipt(event: APIGatewayProxyEvent) {
 
     // ❌ Payment FAILED or DECLINED
     else {
-      // Redirect to failure page
-      // const failureUrl = `${FRONTEND_URL}/#/payment-failure?orderId=${orderId}&reason=${encodeURIComponent(
-      //   message
-      // )}&code=${reasonCode}`;
-
       const failureUrl = `${FRONTEND_URL}/#/payment-failure?orderId=${orderId}&reason=${encodeURIComponent(message)}&code=${reasonCode}`;
 
-
       return {
-        statusCode: 200,
+        statusCode: 302,
         headers: {
           Location: failureUrl,
           "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache"
         },
         body: ""
 

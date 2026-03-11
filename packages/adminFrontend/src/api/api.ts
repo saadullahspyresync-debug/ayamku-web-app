@@ -3,11 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { fetchAuthSession, signOut } from "aws-amplify/auth"; // ✅ Import fetchAuthSession from Amplify
 
 const api: AxiosInstance = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL ||
-     "https://ec661icza2.execute-api.us-east-1.amazonaws.com", // local devs-venture-dev-machine
-    //  "https://e4girjfm00.execute-api.us-east-1.amazonaws.com", // development
-    // "",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
 });
 

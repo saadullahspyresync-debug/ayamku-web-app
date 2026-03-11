@@ -17,7 +17,7 @@ const BranchSelector: React.FC = () => {
   } = useBranchStore();
 
   const [tempSelected, setTempSelected] = useState<string>(
-    selectedBranch?.id || ""
+    selectedBranch?.branchId || ""
   );
   const { t } = useTranslation(); // ✅ use translation hook
 
@@ -33,41 +33,38 @@ const BranchSelector: React.FC = () => {
     })();
   }, [setBranches]);
 
+
   const getFridayNotice = () => {
-  const now = new Date();
-  const currentDay = now.getDay(); // 0 = Sunday, 5 = Friday
-  // const currentDay = 5;
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 5 = Friday
 
-  if (currentDay !== 5) return null; // only show on Friday
+    if (currentDay !== 5) return null; // Only show on Friday
 
-  // Get branches with Friday closing info
-  const branchesWithFridayHours = branches.filter(
-    (b) => b.businessHours?.friday && !b.businessHours.friday.isClosed
-  );
+    // ✅ FIX: Filter for branches that have Friday hours AND are CURRENTLY CLOSED
+    const closedFridayBranches = branches.filter(
+      (b) => b.businessHours?.friday && !b.businessHours.friday.isClosed && !isBranchOpenNow(b)
+    );
 
-  if (branchesWithFridayHours.length === 0) return null;
+    // If all branches are currently open, don't show the red banner at all
+    if (closedFridayBranches.length === 0) return null;
 
-  // Create a text summary, e.g.:
-  // "We are not serving on Friday during 14:00–18:00"
-  // If branches have different hours, show multiple lines
-  const lines = branchesWithFridayHours.map((b) => {
-    const f = b.businessHours.friday;
-    return `${b.name}: ${f.open}–${f.close}`;
-  });
-
-  return (
-    <div className="bg-red-500 text-white text-center py-3 text-sm">
-      <p className="font-semibold">We are not serving on Friday during:</p>
-      {lines.map((line, i) => (
-        <p key={i} className="text-xs opacity-90">{line}</p>
-      ))}
-    </div>
-  );
-};
-
+    return (
+      <div className="bg-red-500 text-white text-center py-3 text-sm">
+        <p className="font-semibold">Our business hours for Friday:</p>
+        {closedFridayBranches.map((b, i) => {
+          const f = b.businessHours.friday;
+          return (
+            <p key={i} className="text-xs opacity-90">
+              {b.name}: {f.open} – {f.close}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
 
   const handleSelect = () => {
-    const branch = branches.find((b) => b.id === tempSelected);
+    const branch = branches.find((b) => b.branchId === tempSelected);
     if (branch) setSelectedBranch(branch);
     setBranchModalOpen(false);
   };
@@ -80,22 +77,14 @@ const BranchSelector: React.FC = () => {
     return () => clearInterval(interval);
   }, [branches, setBranches]);
 
-  // ✅ Helper: Determine if branch is open right now
   const isBranchOpenNow = (branch: any): boolean => {
     if (!branch?.businessHours) return false;
 
     const now = new Date();
-
-    // 🧪 For testing
-    // const currentDay = 5; // 0 = Sunday, 5 = Friday
-    // const currentTime = "13:00"; // "HH:MM"
-
-    const currentDay = now.getDay(); // 0 = Sunday, 5 = Friday
+    const currentDay = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
     const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
-
     const hours = branch.businessHours;
 
-    // ⏱️ Helper to convert "HH:MM" → total minutes
     const toMinutes = (time: string) => {
       const [h, m] = time.split(":").map(Number);
       return h * 60 + m;
@@ -103,34 +92,67 @@ const BranchSelector: React.FC = () => {
 
     const currentMinutes = toMinutes(currentTime);
 
-    // 🕌 FRIDAY logic → closed during given hours
+    // 1. Select the correct time window based on the day
+    let openTimeStr: string;
+    let closeTimeStr: string;
+
     if (currentDay === 5) {
-      const friday = hours.friday;
-
-      if (!friday) return false;
-
-      // If marked fully closed → closed all day
-      if (friday.isClosed) return false;
-
-      // If current time is within Friday close period → branch is closed
-      const fridayOpen = toMinutes(friday.open);
-      const fridayClose = toMinutes(friday.close);
-
-      if (currentMinutes >= fridayOpen && currentMinutes <= fridayClose) {
-        return false; // ❌ Closed during Friday close hours
-      }
+      // Logic for FRIDAY
+      if (hours.friday?.isClosed) return false;
+      openTimeStr = hours.friday.open;
+      closeTimeStr = hours.friday.close;
+    } else {
+      // Logic for MONDAY to THURSDAY (and Weekends)
+      openTimeStr = hours.open;
+      closeTimeStr = hours.close;
     }
+    
+    // Safety check if data is missing for that day
+    if (!openTimeStr || !closeTimeStr) return false;
 
-    // 📅 Normal open hours logic (outside Friday close window)
-    if (!hours.open || !hours.close) return false;
+    const openMin = toMinutes(openTimeStr);
+    const closeMin = toMinutes(closeTimeStr);
 
-    const openMinutes = toMinutes(hours.open);
-    const closeMinutes = toMinutes(hours.close);
-
-    return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+    // 2. Determine if open based on time window (handles overnight shifts)
+    if (closeMin < openMin) {
+      /** * OVERNIGHT CASE (e.g., 14:00 to 01:30)
+       * Open if: 
+       * - Time is between Opening and Midnight (currentTime >= openMin)
+       * OR
+       * - Time is between Midnight and Closing (currentTime <= closeMin)
+       */
+      return currentMinutes >= openMin || currentMinutes <= closeMin;
+    } else {
+      /** * STANDARD CASE (e.g., 09:00 to 18:00)
+       * Open if: Time is strictly between open and close
+       */
+      return currentMinutes >= openMin && currentMinutes <= closeMin;
+    }
   };
 
+  const getDisplayTiming = (branch: any): string => {
+    const now = new Date();
+    const isFriday = now.getDay() === 5; // 5 is Friday
+    
+    const hours = branch.businessHours;
+
+    if (isFriday && hours?.friday) {
+      if (hours.friday.isClosed) return "";
+      return `${hours.friday.open} - ${hours.friday.close} `;
+    }
+
+    // Default for Monday - Thursday (and weekends based on your current setup)
+    if (hours?.open && hours?.close) {
+      return `${hours.open} - ${hours.close} `;
+    }
+
+    return branch.timing || "No timing available";
+  };
+
+
   if (!isBranchModalOpen) return null;
+
+  const isOpen = isBranchOpenNow(branches);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -172,16 +194,16 @@ const BranchSelector: React.FC = () => {
               const isOpen = isBranchOpenNow(branch);
               return (
                 <div
-                  key={branch.id}
+                  key={branch.branchId}
                  onClick={() => {
                     if (!isOpen) {
                       toast.error(`${branch.name} is currently closed`);
                       return; // ❌ prevent selection
                     }
-                    setTempSelected(branch.id); // ✅ only select if open
+                    setTempSelected(branch.branchId); // ✅ only select if open
                   }}
                   className={`flex justify-between items-center border p-3 rounded cursor-pointer transition-colors ${
-                    tempSelected === branch.id
+                    tempSelected === branch.branchId
                       ? "bg-red-50 border-red-300"
                       : "bg-gray-50 hover:bg-gray-100"
                    } ${!isOpen ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -194,7 +216,7 @@ const BranchSelector: React.FC = () => {
                   </div>
 
                   <div className="text-right">
-                    <span
+                    {/* <span
                       className={`text-sm font-medium ${
                         isBranchOpenNow(branch)
                           ? "text-green-600"
@@ -204,11 +226,14 @@ const BranchSelector: React.FC = () => {
                       {isBranchOpenNow(branch)
                         ? t("branch_selector.open")
                         : t("branch_selector.closed")}
+                    </span> */}
+                    <span className={`text-sm font-medium ${isOpen ? "text-green-600" : "text-red-600"}`}>
+                      {isOpen ? t("branch_selector.open") : t("branch_selector.closed")}
                     </span>
 
                     <div className="text-xs text-gray-500">
                       {branch.timing
-                        ? branch.timing
+                        ? getDisplayTiming(branch)
                         : t("branch_selector.no_timing_available")}
                     </div>
                   </div>

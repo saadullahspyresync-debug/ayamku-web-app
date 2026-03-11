@@ -1,9 +1,11 @@
-import { lambda } from '@pulumi/aws';
-// infra/api.ts
-
 import { userGroups, userPool, userPoolClient } from "./auth";
-import { bucket } from "./storage";
-// import * as sst from "sst"
+import { bucket, CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, GOOGLE_MAPS_API_KEY, EMAIL_PASS } from "./storage";
+
+import { cybersourceConfig } from './config';
+
+const stage = $app.stage;
+const cs = cybersourceConfig[stage];
+
 
 export function ApiStack(
   storage: ReturnType<typeof import("./storage").StorageStack>,
@@ -12,7 +14,6 @@ export function ApiStack(
     userPoolClient: any;
     userGroups: any;
   },
-  email: ReturnType<typeof import("./email").EmailStack>
 ) {
   const defaultFunctionProps = {
     runtime: "nodejs20.x" as const,
@@ -24,6 +25,7 @@ export function ApiStack(
 
   // Create API Gateway with CORS enabled
   const api = new sst.aws.ApiGatewayV2("Api", {
+    // domain: cs.domain,
     cors: {
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowOrigins: [
@@ -32,8 +34,11 @@ export function ApiStack(
         "http://localhost:5173",
         "http://localhost:8080",
         "https://gatelike-shyla-rustically.ngrok-free.dev",
-        "https://d2871ozn3su384.cloudfront.net", // development
-        "https://d28g469uwcbitn.cloudfront.net", // development
+        "https://customer-staging.ayamkubrunei.com", // development customer
+        "https://admin-staging.ayamkubrunei.com", // development admin
+        "https://www.ayamkubrunei.com", // production customer
+        "https://ayamkubrunei.com", // production customer
+        "https://admin.ayamkubrunei.com" // production admin
       ],
       allowHeaders: ["*"],
       allowCredentials: true,
@@ -64,9 +69,6 @@ export function ApiStack(
 // =================================================================================
 
 
-
-
-
   // Environment variables for auth lambda functions
   const authEnvironment = {
     USER_POOL_ID: userPool.id,
@@ -78,13 +80,19 @@ export function ApiStack(
       "your-dev-refresh-secret-change-in-production",
     NODE_ENV: process.env.NODE_ENV || "development",
     LOG_LEVEL: process.env.LOG_LEVEL || "info",
-    EMAIL_TOPIC_ARN: email.emailTopic.arn,
   };
 
   // ✅ ADD THIS - Payment receipt route
   api.route("POST /payment-receipt", {
     handler: "packages/functions/src/secure-acceptance.handlePaymentReceipt",
     name: `${$app.name}-${$app.stage}-Payment-Receipt`,
+    environment: {
+      CYBERSOURCE_ENV: cs.environment,
+      CYBERSOURCE_PAYMENT_URL: cs.cySour_api,
+      APP_FRONTEND_URL: cs.frontend_url,
+      API_BASE_URL: cs.api_base_url,
+    },
+    link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.order, storage.tables.item],
     ...defaultFunctionProps,
   });
 
@@ -92,6 +100,13 @@ export function ApiStack(
   api.route("GET /payment-receipt", {
     handler: "packages/functions/src/secure-acceptance.handlePaymentReceipt",
     name: `${$app.name}-${$app.stage}-Payment-Receipt-GET`,
+    environment: {
+      CYBERSOURCE_ENV: cs.environment,
+      CYBERSOURCE_PAYMENT_URL: cs.cySour_api,
+      APP_FRONTEND_URL: cs.frontend_url,
+      API_BASE_URL: cs.api_base_url,
+    },
+    link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS],
     ...defaultFunctionProps,
   });
   api.route(
@@ -99,7 +114,14 @@ export function ApiStack(
     {
       handler: "packages/functions/src/secure-acceptance.main",
       name: `${$app.name}-${$app.stage}-Secure-Acceptance`,
-      // link: [bucket],
+      environment: {
+        CYBERSOURCE_ENV: cs.environment,
+        CYBERSOURCE_PAYMENT_URL: cs.cySour_api,
+        APP_FRONTEND_URL: cs.frontend_url,
+        API_BASE_URL: cs.api_base_url,
+      },
+      link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.item, storage.tables.order],
+
       ...defaultFunctionProps,
     },
     protectedRouteConfig
@@ -108,7 +130,13 @@ export function ApiStack(
   api.route("POST /payment-webhook", {
     handler: "packages/functions/src/secure-acceptance.handleWebhook",
     name: `${$app.name}-${$app.stage}-Payment-Webhook`,
-    // link: [bucket],
+    environment: {
+      CYBERSOURCE_ENV: cs.environment,
+      CYBERSOURCE_PAYMENT_URL: cs.cySour_api,
+      APP_FRONTEND_URL: cs.frontend_url,
+      API_BASE_URL: cs.api_base_url,
+    },
+    link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS],
     ...defaultFunctionProps,
   });
 
@@ -382,19 +410,9 @@ export function ApiStack(
   api.route("POST /contact", {
     handler: "packages/functions/src/email/sendContactFormEmail.main",
     name: `${$app.name}-${$app.stage}-Contact-Form`,
-    link: [storage.tables.contactForm],
+    link: [storage.tables.contactForm, EMAIL_PASS],
     timeout: "30 seconds",
     ...defaultFunctionProps,
-    environment: {
-      SENDER_EMAIL: "saadullah.spyresync@gmail.com",
-      RECIPIENT_EMAIL: "saadullah.spyresync@gmail.com", // Your support email
-    },
-    permissions: [
-      {
-        actions: ["ses:SendEmail", "ses:SendRawEmail"],
-        resources: ["*"],
-      },
-    ],
   });
 
   api.route("GET /admin/contact", {
@@ -426,49 +444,70 @@ export function ApiStack(
   });
 
   api.route("DELETE /admin/contact/{id}", {
-  handler: "packages/functions/src/adminContact/deleteContactMessage.main",
-  name: `${$app.name}-${$app.stage}-DeleteContactMessage`,
-  timeout: "30 seconds",
-  link: [storage.tables.contactForm],
-  ...defaultFunctionProps,
-  permissions: [
-    {
-      actions: ["dynamodb:DeleteItem"],
-      resources: ["*"],
-    },
-  ],
-});
+    handler: "packages/functions/src/adminContact/deleteContactMessage.main",
+    name: `${$app.name}-${$app.stage}-DeleteContactMessage`,
+    timeout: "30 seconds",
+    link: [storage.tables.contactForm],
+    ...defaultFunctionProps,
+    permissions: [
+      {
+        actions: ["dynamodb:DeleteItem"],
+        resources: ["*"],
+      },
+    ],
+  });
+
+  api.route("POST /admin/sendMail", {
+    handler: "packages/functions/src/email/emailService.sendAdminReply",
+    name: `${$app.name}-${$app.stage}-Admin-Send-Mail`,
+    timeout: "30 seconds",
+    link: [EMAIL_PASS],
+    ...defaultFunctionProps,
+  });
+
+
 
   // ======================
   // Protected Order Routes
   // ======================
-  api.route(
-    "POST /orders",
-    {
-      handler: "packages/functions/src/order/create.main",
-      name: `${$app.name}-${$app.stage}-Create-Order`,
-      link: [
-        storage.tables.order,
-        storage.tables.user,
-        storage.tables.item,
-        storage.tables.branch,
-        storage.tables.pointsConfig,
-        storage.tables.pointsTransaction,
-        storage.tables.redemptionHistory,
-        storage.tables.redeemableItem,
-        email.emailTopic,
-      ],
-      ...defaultFunctionProps,
-      environment: authEnvironment,
-    },
-    protectedRouteConfig
-  ); // PROTECTED
+  // api.route(
+  //   "POST /orders",
+  //   {
+  //     handler: "packages/functions/src/order/create.main",
+  //     name: `${$app.name}-${$app.stage}-Create-Order`,
+  //     link: [
+  //       storage.tables.order,
+  //       storage.tables.user,
+  //       storage.tables.item,
+  //       storage.tables.branch,
+  //       storage.tables.pointsConfig,
+  //       storage.tables.pointsTransaction,
+  //       storage.tables.redemptionHistory,
+  //       storage.tables.redeemableItem,
+  //     ],
+  //     ...defaultFunctionProps,
+  //     environment: authEnvironment,
+  //   },
+  //   protectedRouteConfig
+  // ); // PROTECTED
 
   api.route(
     "GET /orders/my",
     {
       handler: "packages/functions/src/order/getMyOrders.main",
       name: `${$app.name}-${$app.stage}-Get-My-Orders`,
+      link: [storage.tables.order],
+      ...defaultFunctionProps,
+      environment: authEnvironment,
+    },
+    protectedRouteConfig
+  ); // PROTECTED
+
+   api.route(
+    "GET /orders/{id}",
+    {
+      handler: "packages/functions/src/order/getById.main",
+      name: `${$app.name}-${$app.stage}-Get-Order-By-Id`,
       link: [storage.tables.order],
       ...defaultFunctionProps,
       environment: authEnvironment,
@@ -635,7 +674,7 @@ export function ApiStack(
     {
       handler: "packages/functions/src/branch/create.main",
       name: `${$app.name}-${$app.stage}-Create-Branch`,
-      link: [storage.tables.branch],
+      link: [storage.tables.branch, GOOGLE_MAPS_API_KEY],
       ...defaultFunctionProps,
     },
     protectedRouteConfig
@@ -675,7 +714,6 @@ export function ApiStack(
       auth.userPool,        // ✅ REQUIRED
       auth.userPoolClient,  // ✅ optional but recommended
       auth.userGroups,
-      email,
     ],
       ...defaultFunctionProps,
     },

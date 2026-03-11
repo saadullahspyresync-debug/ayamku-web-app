@@ -185,7 +185,7 @@ const Header: React.FC = () => {
               </Link>
 
               <Link
-                to="/contact"
+                to="/restaurant-locator"
                 className="flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >

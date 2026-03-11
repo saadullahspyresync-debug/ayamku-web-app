@@ -270,3 +270,15 @@ export function StorageStack() {
     },
   };
 }
+
+
+// Create a secret for cybersource
+export const CYBERSOURCE_MERCHANT_ID = new sst.Secret("CYBERSOURCE_MERCHANT_ID");
+export const CYBERSOURCE_ACCESS_KEY = new sst.Secret("CYBERSOURCE_ACCESS_KEY");
+export const CYBERSOURCE_SECRET_KEY = new sst.Secret("CYBERSOURCE_SECRET_KEY");
+
+// create a secret for google maps
+export const GOOGLE_MAPS_API_KEY = new sst.Secret("GOOGLE_MAPS_API_KEY");
+
+// Create a secret for email service
+export const EMAIL_PASS = new sst.Secret("EMAIL_PASS");

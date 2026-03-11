@@ -10,6 +10,7 @@
     "mock:server": "node mock/server.cjs"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.8",
     "@heroicons/react": "^2.2.0",
     "@react-google-maps/api": "^2.20.7",
     "@vitejs/plugin-react": "^5.0.4",

@@ -15,6 +15,7 @@ type DealModalProps = {
   branches: Branch[];
   onSave: () => void;
   isEditing: boolean;
+  isSave: boolean;
 };
 
 export const DealModal = ({
@@ -27,6 +28,7 @@ export const DealModal = ({
   branches,
   onSave,
   isEditing,
+  isSave,
 }: DealModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -37,7 +39,7 @@ export const DealModal = ({
       {/* Deal Name */}
       <div className="mb-3">
         <label htmlFor="dealName" className="block text-sm font-medium mb-1">
-          Deal Name
+          Deal Name <span className="text-red-500">*</span>
         </label>
         <input
           id="dealName"
@@ -52,7 +54,7 @@ export const DealModal = ({
       {/* Category */}
       <div className="mb-3">
         <label htmlFor="dealCategory" className="block text-sm font-medium mb-1">
-          Category
+          Category <span className="text-red-500">*</span>
         </label>
         <select
           id="dealCategory"
@@ -72,7 +74,7 @@ export const DealModal = ({
       {/* Price */}
       <div className="mb-3">
         <label htmlFor="dealPrice" className="block text-sm font-medium mb-1">
-          Deal Price
+          Deal Price <span className="text-red-500">*</span>
         </label>
         <input
           id="dealPrice"
@@ -126,7 +128,7 @@ export const DealModal = ({
                 : [...prev.availableBranches, branchId],
             }));
           }}
-        />
+        />        
       </div>
 
       {/* Combo Items */}
@@ -145,7 +147,7 @@ export const DealModal = ({
           onClick={onSave}
           className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          {isEditing ? "Save Changes" : "Add Deal"}
+          {isEditing ? isSave ? "Saving..." : "Save" : isSave ? "Adding..." : "Add"}
         </button>
         <button
           onClick={onClose}

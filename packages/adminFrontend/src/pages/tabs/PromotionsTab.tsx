@@ -39,6 +39,7 @@ export default function PromotionsTab() {
   });
   const [editing, setEditing] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isSave, setIsSave] = useState<string | null>(null);
 
   // ────────────── FETCH ──────────────
   useEffect(() => {
@@ -79,10 +80,13 @@ export default function PromotionsTab() {
 
   // ────────────── SAVE / UPDATE ──────────────
   const handleSave = async () => {
-    if (!form.name || !form.type) {
+    if (!form.image || !form.name || !form.type || !form.startDate || !form.endDate || form.items.length === 0 || form.branchIds.length === 0) {
       alert("Please fill in all required fields.");
+      setIsSave(null);
       return;
     }
+
+    setLoading(true);
 
     // ✅ Upload to S3 if new image file selected
     if (form.image instanceof File) {
@@ -99,8 +103,9 @@ export default function PromotionsTab() {
       await fetchPromotions();
       setModalOpen(false);
     } catch (err) {
-      console.error("Failed to save promotion", err);
       alert("Failed to save promotion");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,6 +123,7 @@ export default function PromotionsTab() {
 
   // ────────────── OPEN MODALS ──────────────
   const openAdd = () => {
+    setIsSave("Add")
     setEditing(null);
     setForm({
       name: "",
@@ -136,6 +142,7 @@ export default function PromotionsTab() {
 
   const openEdit = (promo: any) => {
     setEditing(promo.promotionId);
+    setIsSave("Save")
     setForm({
       ...promo,
       startDate: promo.startDate?.split("T")[0] || "",
@@ -173,12 +180,13 @@ export default function PromotionsTab() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Promotions</h3>
-        <button
+        {!loading &&
+          <button
           onClick={openAdd}
           className="px-4 py-2 bg-yellow-500 text-white rounded"
         >
-          {loading ? "Loading..." : "Add Promotion"}
-        </button>
+          + Add Promotion
+        </button>}
       </div>
 
       {/* Loader */}
@@ -260,14 +268,14 @@ export default function PromotionsTab() {
 
       {/* Promotion Modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <h3 className="text-lg font-semibold mb-3">
+        <h3 className="text-lg font-semibold mb-4 flex justify-center">
           {editing ? "Edit Promotion" : "Add Promotion"}
         </h3>
 
         {/* Image Upload */}
         <div className="mb-3">
           <label className="block text-sm font-medium mb-1">
-            Promotion Image
+            Promotion Image <span className="text-red-500">*</span>
           </label>
           <input
             type="file"
@@ -304,7 +312,7 @@ export default function PromotionsTab() {
             htmlFor="promotionName"
             className="block text-sm font-medium mb-1"
           >
-            Promotion Name
+            Promotion Name <span className="text-red-500">*</span>
           </label>
           <input
             id="promotionName"
@@ -340,7 +348,7 @@ export default function PromotionsTab() {
             htmlFor="promotionType"
             className="block text-sm font-medium mb-1"
           >
-            Promotion Type
+            Promotion Type <span className="text-red-500">*</span>
           </label>
           <select
             id="promotionType"
@@ -361,7 +369,7 @@ export default function PromotionsTab() {
               htmlFor="startDate"
               className="block text-sm font-medium mb-1"
             >
-              Start Date
+              Start Date <span className="text-red-500">*</span>
             </label>
             <input
               id="startDate"
@@ -373,7 +381,7 @@ export default function PromotionsTab() {
           </div>
           <div>
             <label htmlFor="endDate" className="block text-sm font-medium mb-1">
-              End Date
+              End Date <span className="text-red-500">*</span>
             </label>
             <input
               id="endDate"
@@ -409,7 +417,7 @@ export default function PromotionsTab() {
 
         {/* Items Multi-select */}
         <div className="mb-3">
-          <label className="block text-sm font-medium mb-1">Select Items</label>
+          <label className="block text-sm font-medium mb-1">Select Items <span className="text-red-500">*</span></label>
           <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border p-2 rounded">
             {items
               .filter((item: any) => item.stockStatus === "in-stock")
@@ -433,7 +441,7 @@ export default function PromotionsTab() {
         {/* Branch Selection */}
         <div className="mb-3">
           <label className="block text-sm font-medium mb-1">
-            Available Branches
+            Available Branches <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {branches.map((b: any) => (
@@ -478,7 +486,8 @@ export default function PromotionsTab() {
             onClick={handleSave}
             className="flex-1 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
           >
-            {editing ? "Save Changes" : "Add Promotion"}
+            {/* {editing ? "Save" : "Add"} */}
+            {isSave === "Save" ? loading ? "Saving..." : "Save" : isSave === "Add" ? loading ? "Adding..." : "Add" : "Save"}
           </button>
           <button
             onClick={() => setModalOpen(false)}

@@ -38,7 +38,7 @@ export default function LoginPage() {
   try {
     const result = await login(form.email, form.password, {
       allowAdminPanel: true,
-    }); 
+    });
 
     if (result?.status === "NEW_PASSWORD_REQUIRED") {
       navigate("/set-new-password", {

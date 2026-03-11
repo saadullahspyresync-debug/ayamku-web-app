@@ -56,11 +56,7 @@ export const SliderSection = ({
     setSliderOpen(true);
   };
 
-  const handleSaveSlider = async () => {
-    if (!sliderForm.title) {
-      alert("Title is required");
-      return;
-    }
+  const handleSaveSlider = async () => {  
 
     try {
       setSaving(true);
@@ -79,6 +75,11 @@ export const SliderSection = ({
         status: sliderForm.status,
         branchIds: sliderForm.branchIds,
       };
+
+      if (!payload.title || !payload.imageUrl || !payload.order || payload.branchIds.length === 0) {
+        alert("Please fill in all required fields!");
+        return;
+      }
 
       if (editingSlider) {
         await slidersApi.updateSlider(editingSlider, payload);
@@ -123,7 +124,7 @@ export const SliderSection = ({
           onClick={openAddSlider}
           className="px-4 py-2 bg-yellow-500 text-white rounded"
         >
-          Add Slider
+          + Add Slider
         </button>
       </div>
 

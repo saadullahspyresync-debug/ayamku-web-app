@@ -122,7 +122,7 @@ export default function OrderTable({
             <tr key={order.orderId} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm font-medium text-gray-900">
-                  {order.orderId.slice(-12)}
+                  {order.orderId.slice(6).toUpperCase()}
                 </div>
               </td>
               <td className="px-6 py-4">

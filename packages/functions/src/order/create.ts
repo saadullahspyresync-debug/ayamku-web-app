@@ -10,6 +10,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Resource } from "sst";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 
+import { sendOrderConfirmation } from "../email/emailService";
+
 const ORDERS_TABLE = Resource.Order.name;
 const ITEMS_TABLE = Resource.Item.name;
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -27,8 +29,6 @@ async function updateRedemption(
   redemptionId: string,
   updates: Record<string, any>
 ) {
-  console.log("🔹 Updating redemption:", redemptionId, updates);
-
   const updateExpr = Object.keys(updates)
     .map((key) => `#${key} = :${key}`)
     .join(", ");
@@ -42,9 +42,6 @@ async function updateRedemption(
     acc[`:${key}`] = updates[key];
     return acc;
   }, {} as Record<string, any>);
-  console.log("exprAttrValues", exprAttrValues);
-  console.log("exprAttrNames", exprAttrNames);
-  console.log("updateExpr", updateExpr);
 
   await dynamoDb.send(
     new UpdateCommand({
@@ -84,7 +81,6 @@ async function processRedemptions(order: any) {
 
     const redeemable = redeemableResult.Item;
     if (!redeemable || redeemable.status !== "active") continue;
-    console.log("redeemable", redeemable);
 
     // 3️⃣ Update RedeemableItem stock
     await dynamoDb.send(
@@ -100,7 +96,6 @@ async function processRedemptions(order: any) {
         },
       })
     );
-    console.log("redemptionId", redemptionId);
 
     // 4️⃣ Mark redemption as applied
     await updateRedemption(redemptionId, {
@@ -207,287 +202,57 @@ async function awardPointsForOrder(
       newBalance,
     };
   } catch (error) {
-    console.error("Award points error:", error);
     return null;
   }
 }
 
+export async function finalizeAndProcessOrder(orderId: string, transactionId: string) {
+  // 1. Fetch the PENDING order we saved during checkout
+  const result = await dynamoDb.send(new GetCommand({
+    TableName: ORDERS_TABLE,
+    Key: { orderId }
+  }));
+  const order = result.Item;
 
-async function sendOrderReceiptEmail(order: any, userEmail: string, userName: string, branchName?: string) {
-  try {
-    console.log("📧 Preparing to send email receipt...");
+  if (!order) throw new Error("Order not found");
+  if (order.status === "completed") return order; // Already processed
 
-    const emailData = {
-      orderId: order.orderId,
-      userId: order.userId,
-      userEmail,
-      userName,
-      items: order.items,
-      address: order.address,
-      paymentMethod: order.paymentMethod,
-      orderType: order.orderType,
-      specialInstructions: order.specialInstructions,
-      scheduledTime: order.scheduledTime,
-      branchId: order.branchId,
-      branchName,
-      subtotal: order.subtotal,
-      redemptionDiscount: order.redemptionDiscount,
-      freeItemsCount: order.freeItemsCount,
-      totalPrice: order.totalPrice,
-      status: order.status,
-      createdAt: order.createdAt,
-    };
-
-    // Publish to SNS topic for async email sending
-    if (EMAIL_TOPIC_ARN) {
-      await sns.send(
-        new PublishCommand({
-          TopicArn: EMAIL_TOPIC_ARN,
-          Message: JSON.stringify(emailData),
-          Subject: `Order Receipt #${order.orderId.substring(0, 8).toUpperCase()}`,
-        })
-      );
-      console.log("✅ Email queued for sending via SNS");
-    } else {
-      console.warn("⚠️ EMAIL_TOPIC_ARN not configured. Email not sent.");
-    }
-  } catch (error) {
-    // Don't fail the order if email fails
-    console.error("❌ Error sending email (non-blocking):", error);
+  // 2. Run your existing business logic
+  if (order.redemptionIds?.length) {
+    await processRedemptions(order);
   }
+
+  if (order.userId && order.userId !== "guest") {
+    await awardPointsForOrder(order.userId, order.totalPrice, orderId);
+  }
+
+  // 3. Update status to 'completed'
+  await dynamoDb.send(new UpdateCommand({
+    TableName: ORDERS_TABLE,
+    Key: { orderId },
+    UpdateExpression: "SET #status = :s, transactionId = :t, updatedAt = :u",
+    ExpressionAttributeNames: { "#status": "status" },
+    ExpressionAttributeValues: {
+      ":s": "completed",
+      ":t": transactionId,
+      ":u": Date.now()
+    }
+  }));
+
+  // update status for sending customer
+  order.status = "completed";
+
+  // 4. Send Email (Fetch user details first like you did in main)
+  try {
+    const email = order?.email;
+    if (email) {
+      await sendOrderConfirmation(email, order);
+    }
+  } catch (emailError) {
+    throw new Error("Order completed but failed to send email.");
+  }
+  return order;
 }
-
-export const main = async (event: APIGatewayProxyEvent) => {
-  try {
-    const userId = event?.requestContext?.authorizer?.lambda?.userId;
-
-    console.log("🔹 User ID:", userId);
-
-    if (!event.body) return sendResponse(400, "Request body missing");
-    const body = JSON.parse(event.body);
-
-    const {
-      orderId,
-      items,
-      address,
-      paymentMethod,
-      orderType,
-      specialInstructions,
-      scheduledTime,
-      branchId,
-      subtotal,
-      redemptionIds,
-      redemptionDiscount,
-      freeItemsCount,
-    } = body;
-
-    if (!items || !items.length) {
-      return sendResponse(400, "No items provided for the order");
-    }
-
-    let totalPrice = 0;
-    const orderItems: any[] = [];
-
-    // ✅ Validate and normalize items
-    for (const i of items) {
-      const itemId = i.itemId || i.id || i._id;
-      const itemResult = await dynamoDb.send(
-        new GetCommand({
-          TableName: ITEMS_TABLE,
-          Key: { itemId },
-        })
-      );
-
-      const quantity = i.quantity || 1;
-      const fallbackPrice = Number(i.price) || 0;
-      const price = itemResult.Item
-        ? Number(itemResult.Item.price) || 0
-        : fallbackPrice;
-
-      orderItems.push({
-        itemId,
-        name: i.name,
-        quantity,
-        price,
-        image: i.images?.[0]?.url || null,
-      });
-
-      totalPrice += price * quantity;
-    }
-
-    // ✅ Adjust total using payload values if provided
-    const computedSubtotal = subtotal || totalPrice;
-    const discount = Number(redemptionDiscount) || 0;
-    const finalTotal = computedSubtotal - discount;
-
-    // const orderId = uuidv4();
-    const order = {
-      orderId,
-      userId: userId || "guest",
-      items: orderItems,
-      address: address || {},
-      paymentMethod: paymentMethod || "cash",
-      redemptionIds: redemptionIds || [],
-      redemptionDiscount: discount,
-      freeItemsCount: freeItemsCount || 0,
-      subtotal: computedSubtotal,
-      totalPrice: finalTotal,
-      orderType: orderType || "dine-in",
-      specialInstructions: specialInstructions || "",
-      scheduledTime: scheduledTime || null,
-      branchId: branchId || null,
-      status: "pending",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-
-    // ✅ Process any redemptions
-    if (order.redemptionIds?.length) {
-      await processRedemptions(order);
-    }
-
-    // ✅ Save order in DynamoDB
-    await dynamoDb.send(
-      new PutCommand({
-        TableName: ORDERS_TABLE,
-        Item: order,
-      })
-    );
-    // const userId = event?.requestContext?.authorizer?.lambda.userId;
-
-    // console.log("🔹 User ID:", userId);
-
-    // if (!event.body) return sendResponse(400, "Request body missing");
-    // const { items, address, paymentMethod, redemptions } = JSON.parse(event.body);
-
-    // if (!items || !items.length) {
-    //   return sendResponse(400, "No items provided for the order");
-    // }
-
-    // let totalPrice = 0;
-    // const orderItems: any[] = [];
-
-    // // ✅ Validate items and calculate total safely
-    // for (const i of items) {
-    //   const itemId = i.itemId || i.id || i._id;
-    //   const itemResult = await dynamoDb.send(
-    //     new GetCommand({
-    //       TableName: ITEMS_TABLE,
-    //       Key: { itemId },
-    //     })
-    //   );
-
-    //   if (!itemResult.Item) {
-    //     console.warn(`Item not found in DB: ${itemId}, using fallback`);
-    //     const fallbackItem = {
-    //       itemId,
-    //       price: Number(i.price) || 0,
-    //     };
-    //     orderItems.push({
-    //       itemId,
-    //       quantity: i.quantity || 1,
-    //       price: fallbackItem.price,
-    //     });
-    //     totalPrice += fallbackItem.price * (i.quantity || 1);
-    //     continue;
-    //   }
-
-    //   const item = itemResult.Item;
-    //   const quantity = i.quantity || 1;
-    //   const price = Number(item.price) || 0;
-
-    //   totalPrice += price * quantity;
-    //   orderItems.push({
-    //     itemId: item.itemId,
-    //     quantity,
-    //     price,
-    //   });
-    // }
-
-    // const orderId = uuidv4();
-    // const order = {
-    //   orderId,
-    //   userId: userId || "guest",
-    //   items: orderItems,
-    //   address: address || {},
-    //   paymentMethod: paymentMethod || "cash",
-    //   redemptions: redemptions || [],
-    //   totalPrice,
-    //   status: "pending",
-    //   createdAt: Date.now(),
-    //   updatedAt: Date.now(),
-    // };
-
-    //  await processRedemptions(order);
-
-    // await dynamoDb.send(
-    //   new PutCommand({ TableName: ORDERS_TABLE, Item: order })
-    // );
-
-    // ✅ Award points only if user exists
-    if (userId) {
-      const pointsResult = await awardPointsForOrder(
-        userId,
-        finalTotal,
-        orderId
-      );
-      if (pointsResult) {
-        console.log(`Awarded ${pointsResult.pointsEarned} points`);
-      }
-    } else {
-      console.log("Guest order - skipping points logic");
-    }
-
-
-    // Get user details for email
-    let userEmail = "";
-    let userName = "Customer";
-    let branchName = "";
-
-    if (userId) {
-      const userResult = await dynamoDb.send(
-        new GetCommand({
-          TableName: Resource.User.name,
-          Key: { userId },
-        })
-      );
-
-      if (userResult.Item) {
-        userEmail = userResult.Item.email;
-        userName = userResult.Item.name || userResult.Item.firstName || "Customer";
-      }
-    }
-
-    // Get branch name if available
-    if (branchId) {
-      try {
-        const branchResult = await dynamoDb.send(
-          new GetCommand({
-            TableName: Resource.Branch.name,
-            Key: { branchId },
-          })
-        );
-        if (branchResult.Item) {
-          branchName = branchResult.Item.name;
-        }
-      } catch (error) {
-        console.log("Could not fetch branch name:", error);
-      }
-    }
-
-    // Send email receipt (non-blocking)
-    if (userEmail) {
-      await sendOrderReceiptEmail(order, userEmail, userName, branchName);
-    } else {
-      console.log("⚠️ No email address found for user, skipping email receipt");
-    }
-
-    return sendResponse(201, "Order created successfully", { order });
-  } catch (err) {
-    console.error("Error creating order:", err);
-    return sendResponse(500, "Error creating order", { error: String(err) });
-  }
-};
 
 // Export for use in order creation
 export { awardPointsForOrder };

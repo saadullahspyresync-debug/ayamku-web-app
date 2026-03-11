@@ -8,11 +8,13 @@
     "@aws-sdk/lib-dynamodb": "^3.910.0",
     "@monorepo-template/core": "*",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^8.0.1",
     "sst": "*",
     "uuid": "^8.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.155",
+    "@types/nodemailer": "^7.0.11",
     "@types/uuid": "^10.0.0"
   }
 }

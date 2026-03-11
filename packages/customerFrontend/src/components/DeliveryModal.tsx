@@ -31,55 +31,77 @@ const DeliveryModal: React.FC = () => {
     selectedBranch || ""
   );
 
-  // ✅ Determine if branch is open now (based on "timing")
   const isBranchOpenNow = (branch: any): boolean => {
-  if (!branch?.businessHours) return false;
+    if (!branch?.businessHours) return false;
 
-  const now = new Date();
+    const now = new Date();
+    const currentDay = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
+    const hours = branch.businessHours;
 
-  // 🧪 For testing
-  // const currentDay = 5; // 0 = Sunday, 5 = Friday
-  // const currentTime = "03:00"; // "HH:MM"
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
 
-  const currentDay = now.getDay(); // 0 = Sunday, 5 = Friday
-  const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
+    const currentMinutes = toMinutes(currentTime);
 
-  const hours = branch.businessHours;
+    // 1. Select the correct time window based on the day
+    let openTimeStr: string;
+    let closeTimeStr: string;
 
-  // ⏱️ Helper to convert "HH:MM" → total minutes
-  const toMinutes = (time: string) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
+    if (currentDay === 5) {
+      // Logic for FRIDAY
+      if (hours.friday?.isClosed) return false;
+      openTimeStr = hours.friday.open;
+      closeTimeStr = hours.friday.close;
+    } else {
+      // Logic for MONDAY to THURSDAY (and Weekends)
+      openTimeStr = hours.open;
+      closeTimeStr = hours.close;
+    }
+    
+    // Safety check if data is missing for that day
+    if (!openTimeStr || !closeTimeStr) return false;
+
+    const openMin = toMinutes(openTimeStr);
+    const closeMin = toMinutes(closeTimeStr);
+
+    // 2. Determine if open based on time window (handles overnight shifts)
+    if (closeMin < openMin) {
+      /** * OVERNIGHT CASE (e.g., 14:00 to 01:30)
+       * Open if: 
+       * - Time is between Opening and Midnight (currentTime >= openMin)
+       * OR
+       * - Time is between Midnight and Closing (currentTime <= closeMin)
+       */
+      return currentMinutes >= openMin || currentMinutes <= closeMin;
+    } else {
+      /** * STANDARD CASE (e.g., 09:00 to 18:00)
+       * Open if: Time is strictly between open and close
+       */
+      return currentMinutes >= openMin && currentMinutes <= closeMin;
+    }
   };
 
-  const currentMinutes = toMinutes(currentTime);
+  const getDisplayTiming = (branch: any): string => {
+    const now = new Date();
+    const isFriday = now.getDay() === 5; // 5 is Friday
+    
+    const hours = branch.businessHours;
 
-  // 🕌 FRIDAY logic → closed during given hours
-  if (currentDay === 5) {
-    const friday = hours.friday;
-
-    if (!friday) return false;
-
-    // If marked fully closed → closed all day
-    if (friday.isClosed) return false;
-
-    // If current time is within Friday close period → branch is closed
-    const fridayOpen = toMinutes(friday.open);
-    const fridayClose = toMinutes(friday.close);
-
-    if (currentMinutes >= fridayOpen && currentMinutes <= fridayClose) {
-      return false; // ❌ Closed during Friday close hours
+    if (isFriday && hours?.friday) {
+      if (hours.friday.isClosed) return "";
+      return `${hours.friday.open} - ${hours.friday.close} `;
     }
-  }
 
-  // 📅 Normal open hours logic (outside Friday close window)
-  if (!hours.open || !hours.close) return false;
+    // Default for Monday - Thursday (and weekends based on your current setup)
+    if (hours?.open && hours?.close) {
+      return `${hours.open} - ${hours.close} `;
+    }
 
-  const openMinutes = toMinutes(hours.open);
-  const closeMinutes = toMinutes(hours.close);
-
-  return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
-};
+    return branch.timing || "No timing available";
+  };
 
   // ✅ Load branches list on mount
   useEffect(() => {
@@ -98,7 +120,7 @@ const DeliveryModal: React.FC = () => {
 
  const handleDeliveryClick = () => {
   setDeliveryType("delivery");
-  window.location.href = "https://www.gomamam.com/";
+  // window.location.href = "https://www.gomamam.com/";
   setDeliveryModalOpen(false);
 };
 
@@ -106,7 +128,7 @@ const DeliveryModal: React.FC = () => {
   const handlePickupSubmit = async () => {
     if (selectedCity && tempSelected) {
       // ✅ Find the selected branch object
-      const branch = branches.find((b) => b.id === tempSelected);
+      const branch = branches.find((b) => b.branchId === tempSelected);
 
       if (branch) {
         // ✅ Update the branch store (this will trigger API calls in BranchSelector logic)
@@ -175,6 +197,7 @@ const DeliveryModal: React.FC = () => {
               <Button
                 onClick={handleDeliveryClick}
                 className="w-full bg-ayamku-primary hover:bg-red-600 text-white"
+                disabled={true}
               >
                 {t("deliveryModal.continue_delivery")}
               </Button>
@@ -232,12 +255,12 @@ const DeliveryModal: React.FC = () => {
                         const open = isBranchOpenNow(branch);
                         return (
                           <option
-                            key={branch.id}
-                            value={branch.id}
+                            key={branch.branchId}
+                            value={branch.branchId}
                             disabled={!open} // 🚫 Disable closed branches
                           >
-                            {branch.name} – {branch.timing}{" "}
-                            {open ? "✅ Open" : "❌ Closed"}
+                            {branch.name} – {getDisplayTiming(branch)}
+                            {open ? "- Open" : "- Closed"}
                           </option>
                         );
                       })}

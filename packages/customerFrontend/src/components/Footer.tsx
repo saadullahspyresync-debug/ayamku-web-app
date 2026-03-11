@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-900 text-white py-12 md:mt-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  to="/contact"
+                  to="/restaurant-locator"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   {t("footer.restaurant_locator")}

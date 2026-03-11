@@ -26,7 +26,7 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
   { id: "orders", label: "Orders", icon: ShoppingBagIcon, roles: ["Admin", "Branch_Manager"] },
   { id: "points", label: "Points", icon: ChartBarIcon, roles: ["Admin", "Branch_Manager"] },
   { id: "highlights", label: "Highlights", icon: SparklesIcon, roles: ["Admin"]  },
-  { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin"]  },
+  { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin", "Branch_Manager"]  },
 ];
 
   const handleLogout = async () => {
@@ -51,7 +51,7 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
       </div>
 
       {/* ✅ Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {navItems
         .filter((item) => item.roles.includes(user?.role ?? ""))
         .map((item) => {

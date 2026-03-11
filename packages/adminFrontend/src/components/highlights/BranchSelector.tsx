@@ -14,7 +14,7 @@ export const BranchSelector = ({
 }: BranchSelectorProps) => {
   return (
     <div className="mb-3">
-      <p className="text-sm font-medium mb-1">Visible in Branches:</p>
+      <p className="text-sm font-medium mb-1">Visible in Branches: <span className="text-red-500">*</span></p>
       <div className="flex flex-wrap gap-2">
         {branches.map((b) => (
           <button

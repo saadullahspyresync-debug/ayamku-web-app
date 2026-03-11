@@ -35,6 +35,7 @@ export const ItemsSection = ({
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<ItemForm>(emptyItem);
+  const [isSave, setIsSave] = useState(false);
 
   const openAdd = () => {
     setEditing(null);
@@ -58,22 +59,24 @@ export const ItemsSection = ({
       status: item.status || "active",
       images: [],
       existingImages: item?.images && item?.images?.map((img) => img?.url) || [],
-      branches: item.availableBranches?.map((b: any) => b._id || b) || [],
+      branches: item.availableBranches?.map((b: any) => b.branchId) || [],
     });
     setIsOpen(true);
   };
 
   const handleSave = async () => {
     try {
+      setIsSave(true);
+      
       let uploadedImageUrls: string[] = [];
       if (form.images.length > 0) {
         uploadedImageUrls = await uploadImagesToS3(form.images);
       }
 
       // Normalize existing images: convert strings to { url } objects
-    const normalizedExistingImages = form.existingImages.map((img) =>
-      typeof img === "string" ? { url: img } : img
-    );
+      const normalizedExistingImages = form.existingImages.map((img) =>
+        typeof img === "string" ? { url: img } : img
+      );
 
       const finalImages = [...normalizedExistingImages, ...uploadedImageUrls];
 
@@ -90,11 +93,18 @@ export const ItemsSection = ({
         images: finalImages,
       };
 
+      if(!payload.name || !payload.categoryId || !payload.price || !payload.stockStatus || !payload.status || payload.availableBranches.length === 0 || payload.images.length === 0) {
+        alert("Please fill in all required fields!");
+        setIsSave(false);
+        return;
+      }
+
       if (editing) await updateItem(editing, payload);
       else await createItem(payload);
 
       await onRefresh();
       setIsOpen(false);
+      setIsSave(false)
     } catch (err) {
       console.error("Save error:", err);
     }
@@ -118,7 +128,7 @@ export const ItemsSection = ({
           onClick={openAdd}
           className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          Add Item
+          + Add Item
         </button>
       </div>
 
@@ -143,6 +153,7 @@ export const ItemsSection = ({
         branches={branches}
         onSave={handleSave}
         isEditing={!!editing}
+        isSave={isSave}
       />
     </>
   );

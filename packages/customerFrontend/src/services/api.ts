@@ -3,10 +3,7 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import axios, { AxiosResponse } from "axios";
 
 // ✅ Backend ka URL (Change this based on your environment)
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  // "https://e4girjfm00.execute-api.us-east-1.amazonaws.com"; // development
-  "https://ec661icza2.execute-api.us-east-1.amazonaws.com"; // local devs-venture-dev-machine
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // ✅ Axios instance
 const api = axios.create({
@@ -214,10 +211,10 @@ interface BranchResponse {
 // };
 export const fetchBranches = async (): Promise<Branch[]> => {
   const res: AxiosResponse<BranchResponse> = await api.get("/branch");
-
+  
   // ✅ Normalize backend data → store format
   const normalizedBranches: Branch[] = res.data.data.map((b) => ({
-    branchId: b.branchId || b._id,
+    branchId: b.branchId,
     id: b.branchId || b._id,
     name: b.name,
     timing: `${b.businessHours?.open || "N/A"} - ${
@@ -238,6 +235,15 @@ export const fetchBranches = async (): Promise<Branch[]> => {
             : false, // default: open on Friday
       },
     },
+    services: {
+      dineIn: b.services?.dineIn || false,
+      pickup: b.services?.pickup || false,
+    },
+    coordinates: {
+      lat: b.coordinates?.lat || null,
+      lng: b.coordinates?.lng || null,
+    },
+    phone: b.contactNumber || "",
   }));
 
   return normalizedBranches;
@@ -423,7 +429,9 @@ export interface Order {
   createdAt: number;
   updatedAt: number;
   orderType: "dine-in" | "pickup" | string;
-  branchId: string
+  branchId: string;
+  transactionId: string;
+  currency: string;
 }
 
 // Save cart
@@ -460,6 +468,12 @@ export const getMyOrders = async (): Promise<Order[]> => {
   return res.data.orders; // ✅ only return the array
 };
 
+export const getOrderById = async (orderId: string): Promise<Order | null> => {
+  const res: AxiosResponse<{ message: string; order: Order | null }> =
+    await api.get(`/orders/${orderId}`);
+  return res.data.order;
+};
+
 // -------------------- DEALS --------------------
 export const fetchDeals = async (): Promise<Item[]> => {
   const res: AxiosResponse<{ success: boolean; data: Item[] }> = await api.get(
@@ -484,6 +498,7 @@ export interface ContactMessage {
   phone: string;
   message: string;
   status?: "pending" | "new" | "in_progress" | "resolved";
+  branchId: string;
 }
 
 

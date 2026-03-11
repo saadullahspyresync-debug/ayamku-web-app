@@ -1,8 +1,6 @@
-// infra/web.ts
-
 import { userPool, userPoolClient } from "./auth";
 import { identityPool } from "./identitypool";
-import { bucket } from "./storage";
+import { bucket, GOOGLE_MAPS_API_KEY } from "./storage";
 
 export function WebStack(props: {
   storage: ReturnType<typeof import("./storage").StorageStack>;
@@ -10,7 +8,7 @@ export function WebStack(props: {
   api: ReturnType<typeof import("./api").ApiStack>;
 }) {
   const { storage, api } = props;
-
+  
   // Get current AWS region
   const region = aws.getRegionOutput().name;
 
@@ -28,6 +26,8 @@ export function WebStack(props: {
       VITE_USER_POOL_ID: userPool.id,
       VITE_IDENTITY_POOL_ID: identityPool.id,
       VITE_USER_POOL_CLIENT_ID: userPoolClient.id,
+      VITE_STAGE: $app.stage,
+      VITE_GOOGLE_MAPS_API_KEY: GOOGLE_MAPS_API_KEY.value,
     },
   });
 
@@ -41,13 +41,13 @@ export function WebStack(props: {
       VITE_REGION: region,
       VITE_API_URL: api.api.url,
       VITE_BUCKET: bucket.name,
-       VITE_USER_POOL_ID: userPool.id,
+      VITE_USER_POOL_ID: userPool.id,
       VITE_IDENTITY_POOL_ID: identityPool.id,
       VITE_USER_POOL_CLIENT_ID: userPoolClient.id,
+      VITE_STAGE: $app.stage,
+      VITE_GOOGLE_MAPS_API_KEY: GOOGLE_MAPS_API_KEY.value,
     },
-  });
-
-  
+  }); 
 
   return {
     customerFrontend,

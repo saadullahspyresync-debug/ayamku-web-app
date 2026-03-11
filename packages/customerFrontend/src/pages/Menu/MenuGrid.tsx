@@ -14,7 +14,7 @@ export const MenuGrid = ({ items, loading, activeCategory, handleAddToCart }: Me
   const { t } = useTranslation();
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 mt-4 relative">
+    <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 mt-4 md:pb-12 relative">
       {loading ? (
         <div className="absolute left-1/2 top-[100px] -translate-x-1/2 flex items-center justify-center gap-2 w-[70%] rounded-md px-1 py-1 bg-gray-200 text-gray-700">
           {t("items.loading")}

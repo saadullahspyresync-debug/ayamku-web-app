@@ -49,10 +49,10 @@ export const verifyOtp = (email: string, otp: string, newPassword: string) =>
   api.post("/auth/password-reset/verify", { email, otp, newPassword });
 
 // ---------- Protected routes ----------
-export const getProfile = () => api.get<UserProfile>("/auth/me");
+// export const getProfile = () => api.get<UserProfile>("/auth/me");
 
-export const updateProfile = (data: Partial<UserProfile>) =>
-  api.put<UserProfile>("/auth/me", data);
+// export const updateProfile = (data: Partial<UserProfile>) =>
+//   api.put<UserProfile>("/auth/me", data);
 
 export const getAdminData = () => api.get("/auth/admin");
 
@@ -63,7 +63,7 @@ export default {
   refreshToken,
   requestPasswordReset,
   verifyOtp,
-  getProfile,
-  updateProfile,
+  // getProfile,
+  // updateProfile,
   getAdminData,
 };

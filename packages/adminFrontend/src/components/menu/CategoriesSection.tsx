@@ -29,6 +29,7 @@ export const CategoriesSection = ({
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<CategoryForm>(emptyCategory);
+  const [isSave, setIsSave] = useState(false);
 
   const openAdd = () => {
     setEditing(null);
@@ -50,13 +51,14 @@ export const CategoriesSection = ({
 
   const handleSave = async () => {
     try {
-      let uploadedImageUrl = null;
+      setIsSave(true);
 
+      let uploadedImageUrl = null;      
       if (form.image && form.image instanceof File) {
         const [fileData] :any = await uploadImagesToS3([form.image] );
         uploadedImageUrl = fileData.url;
       }
-
+      
       const payload = {
         name: form.name,
         description: form.description,
@@ -64,10 +66,17 @@ export const CategoriesSection = ({
         image: uploadedImageUrl || form.existingImage || null,
       };
 
+      if(!payload.name || !payload.status || !payload.image) {
+        alert("Please fill in all required fields!");
+        setIsSave(false);
+        return;
+      }
+
       if (editing) await updateCategory(editing, payload);
       else await createCategory(payload);
 
       await onRefresh();
+      setIsSave(false);
       setIsOpen(false);
     } catch (err) {
       console.error("Save error:", err);
@@ -75,7 +84,7 @@ export const CategoriesSection = ({
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
     try {
       await deleteCategory(id);
       onRefresh();
@@ -92,7 +101,7 @@ export const CategoriesSection = ({
           onClick={openAdd}
           className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
         >
-          Add Category
+          + Add Category
         </button>
       </div>
 
@@ -114,6 +123,7 @@ export const CategoriesSection = ({
         setForm={setForm}
         onSave={handleSave}
         isEditing={!!editing}
+        isSave={isSave}
       />
     </>
   );

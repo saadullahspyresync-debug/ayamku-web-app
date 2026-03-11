@@ -59,7 +59,6 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
       const response = await fetchPointsBalance();
       setPointsData(response);
     } catch (error) {
-      console.error("Failed to fetch points data:", error);
       toast.error("Failed to load points data");
     } finally {
       setLoading(false);
@@ -482,10 +481,10 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <p className="font-bold text-gray-900">
-                          {order.id.slice(-12)} 
+                          {order.id.slice(6).toUpperCase()} 
                         </p>
                         <p className="text-sm text-gray-500">
-                          {new Date(order.date).toLocaleDateString("id-ID", {
+                          {new Date(order.date).toLocaleDateString("en-US", {
                             day: "numeric",
                             month: "long",
                             year: "numeric",

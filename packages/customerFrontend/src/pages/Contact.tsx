@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { sendContactMessage, ContactMessage } from "@/services/api"; // Import from your API service
+import { useBranchStore } from "@/store/branchStore";
 
 const ContactForm = () => {
   const { t } = useTranslation();
@@ -23,6 +24,9 @@ const ContactForm = () => {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+
+  const branchId = useBranchStore.getState().selectedBranch?.branchId;
+
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -44,7 +48,7 @@ const ContactForm = () => {
 
     try {
       // 👇 Always ensure status is "pending" before sending
-      const payload: ContactMessage = { ...formData, status: "new" };
+      const payload: ContactMessage = { ...formData, status: "new", branchId };
 
       const response = await sendContactMessage(payload);
 
@@ -53,30 +57,28 @@ const ContactForm = () => {
           type: "success",
           message:
             response.message ||
-            t("contact.form.successMessage") ||
-            "Thank you! We've received your message and will get back to you soon.",
+            t("contact.form.successMessage") 
         });
-
-        // Reset form
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          subject: "",
-          message: "",
-          status: "new",
-        });
-
+        
         // Auto-hide success message after 5 seconds
         setTimeout(() => {
           setSubmitStatus({ type: null, message: "" });
-        }, 5000);
+          // Reset form
+          setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
+            subject: "",
+            message: "",
+            status: "new",
+          });
+
+        }, 3000);
       } else {
         throw new Error(response.message || "Failed to submit form");
       }
     } catch (error) {
-      console.error("Error submitting contact form:", error);
       setSubmitStatus({
         type: "error",
         message:
@@ -89,7 +91,7 @@ const ContactForm = () => {
       // Auto-hide error message after 5 seconds
       setTimeout(() => {
         setSubmitStatus({ type: null, message: "" });
-      }, 5000);
+      }, 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -141,13 +143,13 @@ const ContactForm = () => {
             </div>
 
             {/* Map Placeholder */}
-            <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
+            {/* <div className="bg-gray-200 h-150 rounded-lg flex items-center justify-center">
               <div className="text-center text-gray-500">
                 <MapPin size={48} className="mx-auto mb-4" />
                 <p className="text-lg font-medium">{t("contact.map.title")}</p>
-                <p className="text-sm">{t("contact.map.subtitle")}</p>
+                <p className="text-sm">{t("contact.map.subtitle")}</p>                
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Contact Form */}

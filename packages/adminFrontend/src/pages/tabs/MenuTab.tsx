@@ -10,7 +10,7 @@ import { DealsSection } from "../../components/menu/DealsSection";
 import { Loader } from "../../components/Loader";
 
 export default function MenuTab() {
-  const [tab, setTab] = useState("items");
+  const [tab, setTab] = useState("categories");
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [deals, setDeals] = useState([]);

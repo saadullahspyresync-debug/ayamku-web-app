@@ -15,7 +15,7 @@ export const ImageUploadMultiple = ({
 }: ImageUploadMultipleProps) => {
   return (
     <div className="mb-2">
-      <label className="font-medium text-sm mb-1">Upload Images:</label>
+      <label className="font-medium text-sm mb-1">Upload Images <span className="text-red-500">*</span></label>
       <input
         type="file"
         multiple
