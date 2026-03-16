@@ -11,7 +11,7 @@ const apiKey: string = Resource.GOOGLE_MAPS_API_KEY.value;
 /**
  * HELPER: Fetch verified data from Google Places API
  */
-async function getVerifiedPlaceDetails(placeId: string): Promise<any> {
+export async function getVerifiedPlaceDetails(placeId: string): Promise<any> {
   const url = `https://places.googleapis.com/v1/places/${placeId}`;
 
   const res = await fetch(url, {
@@ -36,7 +36,7 @@ async function getVerifiedPlaceDetails(placeId: string): Promise<any> {
 /**
  * HELPER: Parse address components into a flat object
  */
-function parseAddress(components: any[]) {
+export function parseAddress(components: any[]) {
   const find = (type: string, useShort = false) => {
     // Note: In the NEW API, the field is 'longText' or 'shortText'
     const comp = components.find((c) => c.types.includes(type));
@@ -77,7 +77,7 @@ export async function main(event: APIGatewayProxyEvent) {
   const addressInfo = parseAddress(verifiedPlace.addressComponents);
 
   // 3. GEO-FENCING: Only allow specific countries (e.g., Malaysia)
-  const allowedCountries = ["MY", "SG", "TH", "ID"];
+  const allowedCountries = ["MY", "SG", "TH", "ID", "BN"];
   if (!allowedCountries.includes(addressInfo.countryCode)) {
     return {
       statusCode: 403,

@@ -696,7 +696,7 @@ export function ApiStack(
     {
       handler: "packages/functions/src/branch/update.main",
       name: `${$app.name}-${$app.stage}-Update-Branch`,
-      link: [storage.tables.branch],
+      link: [storage.tables.branch, GOOGLE_MAPS_API_KEY],
       ...defaultFunctionProps,
     },
     protectedRouteConfig

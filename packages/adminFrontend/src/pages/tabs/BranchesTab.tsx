@@ -26,7 +26,7 @@ export default function BranchesTab() {
     },
     services: { dineIn: true, pickup: true },
     status: "active",
-    coordinates: { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
+    coordinates: { lat: 4.8903, lng: 114.9404 }, // Bandar Seri Begawan
   };
 
   const [branches, setBranches] = useState<any[]>([]);
@@ -127,8 +127,14 @@ export default function BranchesTab() {
       }
       fetchBranches();
       setIsOpen(false);
-    } catch (err) {
-      setError("Failed to save branch.");
+    } catch (err: any) {
+      const serverMessage = err.response?.data?.error || err.message;    
+      if (serverMessage.includes("not supported")) {
+        alert(`Location Error: ${serverMessage}`);
+      } else {
+        alert("Failed to save branch. Please try again.");
+      }
+      
     } finally {
       setLoading(false);
       setIsSave(null);
