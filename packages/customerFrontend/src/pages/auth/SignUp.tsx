@@ -24,6 +24,7 @@ const SignUp: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Form Values State
   const [formData, setFormData] = useState({
@@ -90,6 +91,7 @@ const SignUp: React.FC = () => {
         navigate("/auth/login");
       }
     } catch (err) {
+      // setError("Signup failed. Please try again.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -105,7 +107,10 @@ const SignUp: React.FC = () => {
       await confirmSignup(formData.email, formData.code);
       navigate("/auth/login");
     } catch (err) {
-      console.error(err);
+      setError("Invalid or expired code.");
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
     } finally {
       setIsLoading(false);
     }
@@ -207,6 +212,7 @@ const SignUp: React.FC = () => {
                   <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
                   <Input id="code" type="text" maxLength={6} value={formData.code} onChange={handleChange} placeholder="Enter 6-digit code" className={errors.code ? "border-red-500" : ""} />
                   {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
+                  {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                 </div>
                 <div className="text-center space-y-4">
                   <button type="button" onClick={handleResendCode} className="text-sm text-ayamku-primary hover:underline block w-full">Resend verification code</button>
