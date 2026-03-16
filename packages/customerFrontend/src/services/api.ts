@@ -110,32 +110,6 @@ export const logoutUser = async (): Promise<{ success: boolean }> => {
 };
 
 // -------------------- BRANCHES --------------------
-// export interface Branch {
-//   branchId: string;
-//   name: string;
-//   address: string;
-//   contactNumber: string;
-//   status: string;
-//   businessHours: {
-//     open: string;
-//     close: string;
-//     friday: {
-//       open: string;
-//       close: string;
-//       isClosed: boolean;
-//     };
-//   };
-//   services: {
-//     dineIn: boolean;
-//     pickup: boolean;
-//   };
-//   coordinates: {
-//     lat: number | null;
-//     lng: number | null;
-//   };
-//   createdAt: string;
-//   updatedAt: string;
-// }
 
 export interface Branch {
   branchId: string;
@@ -161,6 +135,7 @@ export interface Branch {
     lat: number | null;
     lng: number | null;
   };
+  timezone: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -175,40 +150,6 @@ interface BranchResponse {
 }
 
 // Get all branches
-// src/services/api.ts
-
-// export const fetchBranches = async (): Promise<Branch[]> => {
-//   const res: AxiosResponse<{ data: Branch[] }> = await api.get("/branch");
-
-//   const normalizedBranches: Branch[] = res.data.data.map((b) => ({
-//     branchId: b.branchId,
-//     name: b.name ?? "Unnamed Branch",
-//     address: b.address ?? "Not specified",
-//     contactNumber: b.contactNumber ?? "",
-//     status: b.status ?? "inactive",
-//     businessHours: {
-//       open: b.businessHours?.open ?? "09:00",
-//       close: b.businessHours?.close ?? "18:00",
-//       friday: {
-//         open: b.businessHours?.friday?.open ?? "14:00",
-//         close: b.businessHours?.friday?.close ?? "18:00",
-//         isClosed: b.businessHours?.friday?.isClosed ?? false,
-//       },
-//     },
-//     services: {
-//       dineIn: b.services?.dineIn ?? false,
-//       pickup: b.services?.pickup ?? false,
-//     },
-//     coordinates: {
-//       lat: b.coordinates?.lat ?? null,
-//       lng: b.coordinates?.lng ?? null,
-//     },
-//     createdAt: b.createdAt ?? new Date().toISOString(),
-//     updatedAt: b.updatedAt ?? new Date().toISOString(),
-//   }));
-
-//   return normalizedBranches;
-// };
 export const fetchBranches = async (): Promise<Branch[]> => {
   const res: AxiosResponse<BranchResponse> = await api.get("/branch");
   
@@ -224,11 +165,11 @@ export const fetchBranches = async (): Promise<Branch[]> => {
       b.status === "active" || b.status === "ACTIVE" || b.status === "1",
     address: b.address || "Not specified",
     businessHours: {
-      open: b.businessHours?.open || "09:00",
-      close: b.businessHours?.close || "18:00",
+      open: b.businessHours?.open,
+      close: b.businessHours?.close,
       friday: {
-        open: b.businessHours?.friday?.open || "14:00",
-        close: b.businessHours?.friday?.close || "18:00",
+        open: b.businessHours?.friday?.open,
+        close: b.businessHours?.friday?.close,
         isClosed:
           typeof b.businessHours?.friday?.isClosed === "boolean"
             ? b.businessHours.friday.isClosed
@@ -244,6 +185,7 @@ export const fetchBranches = async (): Promise<Branch[]> => {
       lng: b.coordinates?.lng || null,
     },
     phone: b.contactNumber || "",
+    timezone: b.timezone || "UTC",
   }));
 
   return normalizedBranches;
@@ -263,24 +205,6 @@ export interface ComboItem {
   itemId: string; // ObjectId reference to another Item
   quantity: number;
 }
-
-// export interface Item {
-//   _id: string;
-//   name: string;
-//   description?: string;
-//   categoryId: string;   // ObjectId reference to Category
-//   price: number;
-//   stock: number;
-//   isCombo: boolean;
-//   comboItems: ComboItem[];
-//   images: string[];
-//   loyaltyPoints: number;
-//   stockStatus: "in-stock" | "out-of-stock";
-//   status: "active" | "inactive";
-//   availableBranches: string[]; // Array of Branch IDs
-//   createdAt?: string;
-//   updatedAt?: string;
-// }
 
 // ✅ Response from backend (for list endpoints)
 interface ItemResponse {

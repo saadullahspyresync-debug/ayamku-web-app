@@ -8,6 +8,18 @@ const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const apiKey: string = Resource.GOOGLE_MAPS_API_KEY.value;
 
 
+async function getTimezone(lat: number, lng: number): Promise<string> {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+  
+  const res = await fetch(url);
+  const data = (await res.json()) as { status: string; timeZoneId: string };
+  // console.log(data);
+  
+  if (data.status !== "OK") return "UTC"; // Fallback
+  return data.timeZoneId; // Returns "Asia/Brunei" or "Asia/Karachi"
+}
+
 /**
  * HELPER: Fetch verified data from Google Places API
  */
@@ -85,6 +97,9 @@ export async function main(event: APIGatewayProxyEvent) {
     };
   }
 
+  // 4. GEO-FENCING: Get timezone
+  const timezone = await getTimezone(verifiedPlace.location.latitude, verifiedPlace.location.longitude);
+  data.timezone = timezone;
 
   // Check if branch exists logic (using DynamoDB Query)
   // Assuming 'Branches' table with primary key 'branchId'

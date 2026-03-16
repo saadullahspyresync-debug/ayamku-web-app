@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { fetchBranches } from "../services/api";
 import { useTranslation } from "react-i18next"; // ✅ import i18n
 import { toast } from "sonner";
+import { DateTime } from "luxon";
 
 const BranchSelector: React.FC = () => {
   const {
@@ -78,56 +79,44 @@ const BranchSelector: React.FC = () => {
   }, [branches, setBranches]);
 
   const isBranchOpenNow = (branch: any): boolean => {
-    if (!branch?.businessHours) return false;
+    if (!branch?.businessHours || !branch?.timezone) return false;
 
-    const now = new Date();
-    const currentDay = now.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-    const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
-    const hours = branch.businessHours;
+    // 1. Get current time SPECIFIC to the branch timezone
+    // This ignores the customer's phone time and gets the real time at the branch
+    const branchNow = DateTime.now().setZone(branch.timezone);
+    
+    const currentDay = branchNow.weekday; // Luxon: 1=Mon, 5=Fri, 7=Sun
+    const currentMinutes = branchNow.hour * 60 + branchNow.minute;
 
     const toMinutes = (time: string) => {
+      if (!time) return 0;
       const [h, m] = time.split(":").map(Number);
       return h * 60 + m;
     };
 
-    const currentMinutes = toMinutes(currentTime);
-
-    // 1. Select the correct time window based on the day
     let openTimeStr: string;
     let closeTimeStr: string;
 
+    // Luxon uses 5 for Friday. Match your logic:
     if (currentDay === 5) {
-      // Logic for FRIDAY
-      if (hours.friday?.isClosed) return false;
-      openTimeStr = hours.friday.open;
-      closeTimeStr = hours.friday.close;
+      if (branch.businessHours.friday?.isClosed) return false;
+      openTimeStr = branch.businessHours.friday.open;
+      closeTimeStr = branch.businessHours.friday.close;
     } else {
-      // Logic for MONDAY to THURSDAY (and Weekends)
-      openTimeStr = hours.open;
-      closeTimeStr = hours.close;
+      openTimeStr = branch.businessHours.open;
+      closeTimeStr = branch.businessHours.close;
     }
-    
-    // Safety check if data is missing for that day
+
     if (!openTimeStr || !closeTimeStr) return false;
 
     const openMin = toMinutes(openTimeStr);
     const closeMin = toMinutes(closeTimeStr);
 
-    // 2. Determine if open based on time window (handles overnight shifts)
+    // 2. Overnight logic (same as yours, but using branch local minutes)
     if (closeMin < openMin) {
-      /** * OVERNIGHT CASE (e.g., 14:00 to 01:30)
-       * Open if: 
-       * - Time is between Opening and Midnight (currentTime >= openMin)
-       * OR
-       * - Time is between Midnight and Closing (currentTime <= closeMin)
-       */
       return currentMinutes >= openMin || currentMinutes <= closeMin;
-    } else {
-      /** * STANDARD CASE (e.g., 09:00 to 18:00)
-       * Open if: Time is strictly between open and close
-       */
-      return currentMinutes >= openMin && currentMinutes <= closeMin;
     }
+    return currentMinutes >= openMin && currentMinutes <= closeMin;
   };
 
   const getDisplayTiming = (branch: any): string => {
