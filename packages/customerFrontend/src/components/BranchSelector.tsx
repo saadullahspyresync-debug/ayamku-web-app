@@ -184,7 +184,7 @@ const BranchSelector: React.FC = () => {
         </div>
 
         {/* Branch List */}
-        <div className="space-y-3 mb-6 px-3 min-h-40 max-h-90 overflow-y-auto">
+        <div className="space-y-3 mb-6 px-3 max-h-[450px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {branches.length === 0 ? (
             <p className="text-center text-gray-500 py-6">
               {t("branch_selector.no_branches")}
@@ -216,17 +216,6 @@ const BranchSelector: React.FC = () => {
                   </div>
 
                   <div className="text-right">
-                    {/* <span
-                      className={`text-sm font-medium ${
-                        isBranchOpenNow(branch)
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {isBranchOpenNow(branch)
-                        ? t("branch_selector.open")
-                        : t("branch_selector.closed")}
-                    </span> */}
                     <span className={`text-sm font-medium ${isOpen ? "text-green-600" : "text-red-600"}`}>
                       {isOpen ? t("branch_selector.open") : t("branch_selector.closed")}
                     </span>
