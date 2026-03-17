@@ -25,7 +25,7 @@ export default function MapPicker({ initialAddress, initialCoords, onLocationSel
   const inputRef = useRef<HTMLInputElement>(null); // Your simple input field
   // const autocompleteRef = useRef<any>(null);
 
-  const defaultPos = initialCoords?.lat ? initialCoords : { lat: 1.3521, lng: 103.8198 }; // Kuala Lumpur
+  const defaultPos = initialCoords?.lat ? initialCoords : { lat: 4.8903, lng: 114.9404 };
 
   // Load Google Maps script
   useEffect(() => {

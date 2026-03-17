@@ -36,7 +36,7 @@ export default function RestaurantLocator() {
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
 
-  const defaultPos = { lat: 3.139, lng: 101.6869 }; // Kuala Lumpur
+  const defaultPos = { lat: 4.8903, lng: 114.9404 }; 
 
  useEffect(() => {
     const start = async () => {
