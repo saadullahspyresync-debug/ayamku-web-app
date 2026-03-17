@@ -32,7 +32,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
     startDate: null as string | null,
     endDate: null as string | null,
   });
-  const { addItem } = useCartStore();
+  const { addItems } = useCartStore();
 
   const navigate = useNavigate();
 
@@ -71,26 +71,32 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
 
       // ✅ Fetch real order data
       const orders = await getMyOrders();
-      setReOrder(orders)
+      
+      if(orders.length > 0){
+        setReOrder(orders)
         
-      // Fetch branch details
-      const branchName = await fetchBranchById(orders[0].branchId);
-      setBranchName(branchName?.name)
+        // Fetch branch details
+        const branchName = await fetchBranchById(orders[0].branchId);
+        setBranchName(branchName?.name)
 
-      // Map to UI format
-      const formatted = orders.map((o) => ({
-        id: o.orderId,
-        date: new Date(o.createdAt).toISOString(),
-        items: o.items.length,
-        quantity: o.items[0].quantity,
-        total: o.totalPrice,
-        status: o.status,
-        // branch: o?.branchId || "N/A",
-      }));
-      setOrderHistory(formatted);
+        // Map to UI format
+        const formatted = orders.map((o) => ({
+          id: o.orderId,
+          date: new Date(o.createdAt).toISOString(),
+          items: o.items.length,
+          quantity: o.items.map((i) => i.quantity).reduce((a, b) => a + b, 0),
+          total: o.totalPrice,
+          status: o.status,
+          // branch: o?.branchId || "N/A",
+        }));
+        setOrderHistory(formatted);
+      }
+      else{
+        setOrderHistory([])
+        toast.error("No orders found");
+      }
 
     } catch (error) {
-      console.error("Failed to fetch order history:", error);
       toast.error("Failed to load order history");
     } finally {
       setLoading(false);
@@ -153,39 +159,70 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
     }
   };
 
-  const handleReorderClick = async(id: string) => {
-    setLoading(true)
-    const order = reOrder.find((o) => o.orderId === id);
+ const handleReorderClick = async (id: string) => {
+    setLoading(true);
 
-    // fetching item for image
-    const itemID = order.items[0].itemId;
-    const idItem = await fetchItemById(itemID).then((res) => res)
+    try {
+      const order = reOrder.find((o) => o.orderId === id);
 
-    // add item into cart
-    if(idItem){
-      addItem({
-      itemId: order.items[0].itemId,
-      id: order.items[0].itemId,
-      name: order.items[0].name,
-      price: order.items[0].price,
-      images: idItem?.images.length > 0
-        ? [idItem?.images[0]]
-        : ["/assets/images/placeholder.png"], 
-      // description: order.description,
-      _id: order?.items[0]?.itemId || Math.random().toString(),
-      stock: order?.stock,
-      isCombo: false,
-      // comboItems: [],
-      loyaltyPoints: order?.items[0]?.loyaltyPoints || 0,
-      stockStatus: order?.items[0]?.stockStatus,
-      status: order?.items[0]?.status,
-      categoryId: order?.items[0]?.categoryId,
-      availableBranches: order?.items[0]?.availableBranches,
-    })
+      if (!order || !order.items || order.items.length === 0) {
+        toast.error("No items found in this order.");
+        return;
+      }
+
+      // 1. Fetch all items in parallel (The "Bulk Fetch")
+      const fetchedResults = await Promise.all(
+        order.items.map(async (orderItem) => {
+          try {
+            const idItem = await fetchItemById(orderItem.itemId);
+            
+            if (!idItem) return null;
+
+            // 2. Map the API response to your CartItem structure
+            return {
+              itemId: idItem.itemId,
+              id: idItem.itemId,
+              name: idItem.name,
+              price: idItem.price,
+              images: idItem?.images?.length > 0
+                ? [idItem.images[0]]
+                : ["/assets/images/placeholder.png"],
+              _id: idItem.itemId || Math.random().toString(),
+              stock: idItem?.stock,
+              isCombo: idItem?.isCombo || false,
+              loyaltyPoints: idItem?.loyaltyPoints || 0,
+              stockStatus: idItem?.stockStatus,
+              status: idItem?.status,
+              categoryId: idItem?.categoryId,
+              availableBranches: idItem?.availableBranches || [],
+            };
+          } catch (err) {
+            console.error(`Failed to fetch item ${orderItem.itemId}:`, err);
+            return null;
+          }
+        })
+      );
+
+      // 3. Filter out any nulls (failed fetches or missing items)
+      const validItems = fetchedResults.filter((item): item is any => item !== null);
+
+      if (validItems.length > 0) {
+        // 4. Batch update the store (The "Bulk Add")
+        addItems(validItems);
+        
+        onClose();
+        navigate('/cart');
+      } else {
+        // Handle case where items might no longer exist in the DB
+        toast.error("Items from this order are no longer available.");
+      }
+
+    } catch (error) {
+      toast.error("Reorder process failed:");
+    } finally {
+      setLoading(false);
     }
-    navigate('/cart')
-    setLoading(false)
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

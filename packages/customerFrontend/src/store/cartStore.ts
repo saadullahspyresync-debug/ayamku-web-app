@@ -37,10 +37,11 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
-  typeOfOrder: string;
+  typeOfOrder: string | null;
   arrivalTime: string | null;
-  specialInstruction: string;
+  specialInstruction: string | null;
   addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItems: (newItems: Omit<CartItem, "quantity">[]) => void; // New Method
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -74,6 +75,23 @@ export const useCartStore = create<CartState>()(
         } else {
           updatedItems = [...items, { ...newItem, quantity: 1 }];
         }
+
+        set({ items: updatedItems });
+      },
+
+      // Bulk add (Perfect for Reorder!)
+      addItems: (newItems) => {
+        const { items } = get();
+        const updatedItems = [...items];
+
+        newItems.forEach((newItem) => {
+          const index = updatedItems.findIndex((item) => item.id === newItem.id);
+          if (index > -1) {
+            updatedItems[index].quantity += 1;
+          } else {
+            updatedItems.push({ ...newItem, quantity: 1 });
+          }
+        });
 
         set({ items: updatedItems });
       },
