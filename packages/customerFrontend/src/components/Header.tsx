@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, MapPin, User, X } from "lucide-react";
+import { Menu, MapPin, User, X, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext"; // ✅ replaced useAuthStore
 import { useCartStore } from "../store/cartStore";
@@ -65,13 +65,23 @@ const Header: React.FC = () => {
             </div>
 
             {/* Right Side */}
-            <div className="flex items-center space-x-4">
+            {/* <div className="flex items-center space-x-4"> */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
+
+              {/* NEW: Mobile Search Button (Visible only on small screens) */}
+              <button
+                onClick={() => navigate?.("/search")}
+                className="md:hidden p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
+              >
+                <Search size={20} />
+              </button>
+
               {/* Cart */}
               <button
                 onClick={toggleCart}
                 className="relative p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
               >
-                <img src="/assets/icons/cart-basket-icon.svg" />
+                <img src="/assets/icons/cart-basket-icon.svg"/>
                 {totalCartItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-ayamku-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {totalCartItems}
