@@ -8,6 +8,31 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { toast } from "../../hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { Check, X } from "lucide-react";
+
+const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
+  <div className={`flex items-center space-x-2 text-xs transition-colors ${met ? "text-green-600" : "text-gray-400"}`}>
+    {met ? <Check size={14} /> : <X size={14} />}
+    <span>{text}</span>
+  </div>
+);
+
+const PasswordCriteria = ({ password }: { password: string }) => {
+  const requirements = [
+    { met: password.length >= 8, text: "At least 8 characters" },
+    { met: /[A-Z]/.test(password) && /[a-z]/.test(password), text: "Upper & Lowercase letters" },
+    { met: /[0-9]/.test(password), text: "At least one number" },
+    { met: /[^A-Za-z0-9]/.test(password), text: "One special character (@$!%*?&)" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-2 mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+      {requirements.map((req, index) => (
+        <PasswordRequirement key={index} met={req.met} text={req.text} />
+      ))}
+    </div>
+  );
+};
 
 const verifySchema = z.object({
   code: z.string().min(6, "Code must be 6 digits").max(6, "Code must be 6 digits"),
@@ -47,17 +72,12 @@ const SignUp: React.FC = () => {
 
     if (step === "signup") {
       if (formData.fullName.length < 2) newErrors.fullName = "Full name is too short";
-      if (formData.mobileNumber.length < 7) newErrors.mobileNumber = "Invalid mobile number";
-      if (formData.mobileNumber.length > 7) newErrors.mobileNumber = "Enter valid mobile number without country code";
+      if (formData.mobileNumber.length < 10) newErrors.mobileNumber = "Invalid mobile number";
+      if (formData.mobileNumber.length > 10) newErrors.mobileNumber = "Enter valid mobile number without (+)";
       if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email address";
       
       // Password Complexity
       const pass = formData.password;
-      if (pass.length < 8) newErrors.password = "Min 8 characters required";
-      else if (!/[A-Z]/.test(pass)) newErrors.password = "Needs an uppercase letter";
-      else if (!/[0-9]/.test(pass)) newErrors.password = "Needs a number";
-      else if (!/[^A-Za-z0-9]/.test(pass)) newErrors.password = "Needs a special character";
-
       if (pass !== formData.confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match";
       }
@@ -170,7 +190,7 @@ const SignUp: React.FC = () => {
                 {/* Mobile */}
                 <div>
                   <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile number</label>
-                  <Input id="mobileNumber" type="tel" value={formData.mobileNumber} onChange={handleChange} placeholder="1234567" className={errors.mobileNumber ? "border-red-500" : ""} />
+                  <Input id="mobileNumber" type="tel" value={formData.mobileNumber} onChange={handleChange} placeholder="Enter your mobile number  (e.g. 6731234567)" className={errors.mobileNumber ? "border-red-500" : ""} />
                   {errors.mobileNumber && <p className="text-red-500 text-sm mt-1">{errors.mobileNumber}</p>}
                 </div>
 
@@ -190,8 +210,8 @@ const SignUp: React.FC = () => {
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                 </div>
+                <PasswordCriteria password={formData.password} />
 
                 {/* Confirm Password */}
                 <div>

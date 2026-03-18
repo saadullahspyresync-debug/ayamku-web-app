@@ -18,6 +18,7 @@ const ContactForm = () => {
     message: "",
     status: "new",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
@@ -26,6 +27,29 @@ const ContactForm = () => {
   }>({ type: null, message: "" });
 
   const branchId = useBranchStore.getState().selectedBranch?.branchId;
+
+  // --- Manual Validation Function ---
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Name validation
+    if (formData.firstName.trim().length < 2) newErrors.firstName = "First name is too short";
+    if (formData.lastName.trim().length < 2) newErrors.lastName = "Last name is too short"; 
+
+    // Phone and Email validation
+    const phoneDigits = formData.phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10) newErrors.phone = "Invalid mobile number";
+    if (phoneDigits.length > 10) newErrors.phone = "Enter valid mobile number without (+)";
+    if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email address";
+
+    // Subject and Message validation 
+    if (!formData.subject) newErrors.subject = "Please select a subject";
+    if (formData.message.trim().length < 10) newErrors.message = "Message must be at least 10 characters";
+      
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
 
   const handleChange = (
@@ -39,10 +63,19 @@ const ContactForm = () => {
     if (submitStatus.type) {
       setSubmitStatus({ type: null, message: "" });
     }
+
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: "" });
 
@@ -141,15 +174,6 @@ const ContactForm = () => {
                 <p>{t("contact.email")}</p>
               </div>
             </div>
-
-            {/* Map Placeholder */}
-            {/* <div className="bg-gray-200 h-150 rounded-lg flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <MapPin size={48} className="mx-auto mb-4" />
-                <p className="text-lg font-medium">{t("contact.map.title")}</p>
-                <p className="text-sm">{t("contact.map.subtitle")}</p>                
-              </div>
-            </div> */}
           </div>
 
           {/* Contact Form */}
@@ -194,9 +218,9 @@ const ContactForm = () => {
                     placeholder={t("contact.form.firstName")}
                     value={formData.firstName}
                     onChange={handleChange}
-                    required
                     disabled={isSubmitting}
                   />
+                  {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
                   <Input
@@ -204,9 +228,9 @@ const ContactForm = () => {
                     placeholder={t("contact.form.lastName")}
                     value={formData.lastName}
                     onChange={handleChange}
-                    required
                     disabled={isSubmitting}
                   />
+                  {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                 </div>
               </div>
               <input type="hidden" name="status" value={formData.status} />
@@ -217,21 +241,21 @@ const ContactForm = () => {
                   placeholder={t("contact.form.email")}
                   value={formData.email}
                   onChange={handleChange}
-                  required
                   disabled={isSubmitting}
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
               <div>
                 <Input
                   name="phone"
                   type="tel"
-                  placeholder={t("contact.form.phone")}
+                  placeholder="Enter your mobile number  (e.g. 6731234567)"
                   value={formData.phone}
                   onChange={handleChange}
-                  required
                   disabled={isSubmitting}
                 />
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
 
               <div>
@@ -243,7 +267,6 @@ const ContactForm = () => {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  required
                   disabled={isSubmitting}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ayamku-primary disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
@@ -260,6 +283,7 @@ const ContactForm = () => {
                     {t("contact.form.inquiry") || "Inquiry"}
                   </option>
                 </select>
+                {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
               </div>
 
               <div>
@@ -270,9 +294,9 @@ const ContactForm = () => {
                   value={formData.message}
                   onChange={handleChange}
                   maxLength={500}
-                  required
                   disabled={isSubmitting}
                 />
+                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
                 <p className="text-sm text-gray-500 mt-1">
                   {formData.message.length}/500 characters
                 </p>
