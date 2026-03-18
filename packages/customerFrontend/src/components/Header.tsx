@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, MapPin, User, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,6 @@ import PointsBadge from "./PointsBadge";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -59,13 +58,9 @@ const Header: React.FC = () => {
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <img src="/assets/icons/search-icon.svg" />
                 </div>
-                <Input
-                  type="text"
-                  placeholder={t("find_food")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:border-ayamku-primary"
-                />
+                <button className="pl-5 pr-4 py-2 w-full border border-gray-200 text-gray-500 rounded-lg" onClick={() => navigate?.("/search")}>
+                  {t("find_food")}
+                </button>                
               </div>
             </div>
 

@@ -15,6 +15,7 @@ import BestFoodSection from "./BestFoodSection";
 import RewardsWidget from "@/components/RewardsWidget";
 import HighlightsPopup from "./HighlightsPopup";
 import ModernLoader from "@/components/Loader";
+import { CartItem } from "@/store/cartStore";
 
 
 const Home: React.FC = () => {
@@ -29,11 +30,6 @@ const Home: React.FC = () => {
   const [sliders, setSliders] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // reset branch on load
-  // useEffect(() => {
-  //   clearSelectedBranch();
-  // }, [clearSelectedBranch]);
 
   // fetch data
   useEffect(() => {
@@ -83,7 +79,7 @@ const Home: React.FC = () => {
     loadBranchData();
   }, [selectedBranch, setDeliveryModalOpen]);
 
-  const handleAddToCart = (item : any) => {
+  const handleAddToCart = (item : CartItem) => {
     addItem({
       itemId: item.itemId,
       id: item.itemId,

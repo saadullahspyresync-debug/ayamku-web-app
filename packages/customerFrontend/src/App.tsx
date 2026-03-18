@@ -24,6 +24,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 import OrderHistory from "./pages/OrderHistory";
 import RestaurantLocator from "./pages/RestaurantLocator";
+import SearchPage from "./pages/SearchPage";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,14 @@ const App = () => (
               element={
                 <Layout>
                   <RestaurantLocator />
+                </Layout>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <Layout>
+                  <SearchPage />
                 </Layout>
               }
             />

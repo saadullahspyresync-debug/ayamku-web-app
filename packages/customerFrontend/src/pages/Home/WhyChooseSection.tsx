@@ -37,7 +37,13 @@ const WhyChooseSection = ({ t }: any) => {
         <div className="grid md:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <div key={index} className="text-center flex flex-col items-center">
-              <img src={service.icon} alt={service.title} className="mb-4" />
+              <div className="flex items-center justify-center mb-4">
+                <img 
+                  src={service.icon} 
+                  alt={service.title} 
+                  className="h-40 w-45 object-contain" 
+                />
+              </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {service.title}
               </h3>
