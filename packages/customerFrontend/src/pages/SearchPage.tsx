@@ -83,7 +83,7 @@ const SearchPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6 min-h-screen">
       {/* Local Search Input for the Search Page */}
-      <div className="relative mt-10 mb-8 max-w-2xl mx-auto focus-within:ring-2 focus-within:ring-ayamku-primary focus-within:border-transparent outline-none transition-all">
+      <div className="relative mt-10 mb-8 max-w-2xl mx-auto focus-within:border-transparent outline-none transition-all">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input
           type="text"
