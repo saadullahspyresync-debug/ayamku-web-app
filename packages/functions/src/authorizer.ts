@@ -38,7 +38,7 @@ const rolePermissions = {
 
     // Branch Manager
     {path: "/branch_manager", methods: ["GET", "POST"]},
-    {path: "/branch_manager/status/{email}", methods: ["GET", "PUT", "DELETE", "PATCH"]},
+    {path: "/branch_manager/{id}", methods: ["GET", "PUT", "DELETE", "PATCH"]},
     {path: "/branch_manager/delete/{id}", methods: ["DELETE"]},
 
     // Order Management

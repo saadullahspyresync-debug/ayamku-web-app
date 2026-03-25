@@ -103,8 +103,8 @@ export async function main(event: APIGatewayProxyEvent) {
     ========================= */
 
     const item = {
-      PK: `BRANCH#${branchId}`,
-      SK: `MANAGER#${email}`,
+      PK: `USER#${userId}`,
+      SK: `METADATA`,
 
       userId,
       email,
@@ -119,7 +119,7 @@ export async function main(event: APIGatewayProxyEvent) {
         TableName: Resource.BranchManager.name,
         Item: item,
         ConditionExpression:
-          "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+          "attribute_not_exists(PK)",
       })
     );
 

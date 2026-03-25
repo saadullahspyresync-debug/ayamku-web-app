@@ -14,9 +14,9 @@ export const createBranchManager = (data: CreateBranchManagerPayload) => {
 
 // Get all branches manager (admin only)
 export const getAllBranchManager = () => api.get("/branch_manager");
-  
-// disable branch manager (admin only)
-export const updateBranchManagerStatus = (email: string, status: "ACTIVE" | "DISABLED") => api.put(`/branch_manager/status/${email}`, { status });
+
+// edit branch manager (admin only)
+export const editBranchManager = (id: string, data: any) => api.patch(`/branch_manager/${id}`, data);
 
 // Delete a branch manager (admin only)
 export const deleteBranchManager = (id: string) => api.delete(`/branch_manager/delete/${id}`);
@@ -27,7 +27,8 @@ export const authMe = () => api.get("/auth/me");
 export default {
   createBranchManager,
   getAllBranchManager,
-  updateBranchManagerStatus,
+  editBranchManager,
+  // updateBranchManagerStatus,
   deleteBranchManager,
   authMe,
 };

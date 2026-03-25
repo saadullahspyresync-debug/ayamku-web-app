@@ -1,4 +1,4 @@
-import { userGroups, userPool, userPoolClient } from "./auth";
+import { AuthResources, userGroups, userPool, userPoolClient } from "./auth";
 import { bucket, CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, GOOGLE_MAPS_API_KEY, EMAIL_PASS } from "./storage";
 
 import { cybersourceConfig } from './config';
@@ -732,10 +732,10 @@ export function ApiStack(
   ); 
 
   api.route(
-    "PUT /branch_manager/status/{email}",
+    "PATCH /branch_manager/{id}",
     {
-      handler: "packages/functions/src/branchManager/updateStatus.main",
-      name: `${$app.name}-${$app.stage}-Update-Managers`,
+      handler: "packages/functions/src/branchManager/update.main",
+      name: `${$app.name}-${$app.stage}-Update-Branch-Manager`,
       link: [storage.tables.branchManager],
       ...defaultFunctionProps,
     },
@@ -747,7 +747,12 @@ export function ApiStack(
     {
       handler: "packages/functions/src/branchManager/deleteManager.main",
       name: `${$app.name}-${$app.stage}-Manager-Delete`,
-      link: [storage.tables.branchManager],
+      link: [storage.tables.branchManager, AuthResources.userPool],
+      permissions: [
+        {
+        actions: ["cognito-idp:AdminDeleteUser"],
+        resources: [AuthResources.userPool.arn],
+      }],
       ...defaultFunctionProps,
     },
     protectedRouteConfig

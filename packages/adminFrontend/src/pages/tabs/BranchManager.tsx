@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 
 import { getAllBranches, getBranchById } from "../../api/branch";
-import { createBranchManager, deleteBranchManager, getAllBranchManager, updateBranchManagerStatus } from "../../api/branchManager";
+import { createBranchManager, deleteBranchManager, getAllBranchManager, editBranchManager } from "../../api/branchManager";
 import Modal from "../../components/Modal";
 import { Loader } from "../../components/Loader";
 
@@ -21,7 +21,7 @@ type BranchManager = {
 const BranchManagerTab = () => {
 
     const [pageLoading, setPageLoading] = useState(true); 
-    const [actionLoading, setActionLoading] = useState<string | null>(null); 
+    const [isSave, setIsSave] = useState<string | null>(null); 
 
     const [branchManagers, setBranchManagers] = useState<BranchManager[]>([]);    
     const [branches, setBranches] = useState<Branch[]>([]);
@@ -30,13 +30,14 @@ const BranchManagerTab = () => {
 
     const [email, setEmail] = useState("");
     const [branchId, setBranchId] = useState("");
+    
     const [error, setError] = useState("");
 
     useEffect(() => {
         const init = async () => {
             await Promise.all([
-            fetchBranches(),
-            fetchBranchManagers(),
+                fetchBranches(),
+                fetchBranchManagers(),
             ]);
             setPageLoading(false);
         };
@@ -47,6 +48,7 @@ const BranchManagerTab = () => {
     const openAdd = () => {
         setEditingId(null);
         setIsOpen(true);
+        setIsSave("Add");
     };
 
     const fetchBranches = async () => {
@@ -102,15 +104,12 @@ const BranchManagerTab = () => {
 
 
     const addBranchManager = async () => {
+        // return console.log(branch);
         // 1. Trim whitespace to prevent errors from accidental spaces
         const cleanEmail = email.trim();
 
         // 2. Check for empty fields
         if (!cleanEmail || !branchId) {
-            // setError("Email and Branch are required");
-            // setTimeout(() => {
-            //     setError("")
-            // }, 3000);
             alert("Email and Branch are required");
             return;
         }
@@ -127,10 +126,17 @@ const BranchManagerTab = () => {
         setError("");
 
         try {
-            await createBranchManager( { 
-                email: cleanEmail.toLowerCase(), 
-                branchId 
-            } );
+            if(!editingId) {
+                await createBranchManager( { 
+                    email: cleanEmail.toLowerCase(), 
+                    branchId 
+                } );
+            }
+            else {
+                await editBranchManager(editingId, {                
+                    branchId: branchId
+                });
+            }            
 
             setIsOpen(false);
             setEmail("");
@@ -138,6 +144,7 @@ const BranchManagerTab = () => {
             fetchBranchManagers();
         } 
         catch (err: any) {
+            console.error("DEBUG: Catching error before request sent:", err);
             setError(err.response?.data?.error);
             setTimeout(() => {
                 setError("")
@@ -148,43 +155,23 @@ const BranchManagerTab = () => {
         }
     };
 
-    // const onDeleteManager = async (id: string) => {
-    //     if (!window.confirm("Delete this Branch Manager?")) return
+    const onDeleteManager = async (id: string) => {
+        if (!window.confirm("Delete this Branch Manager?")) return
 
-    //     try {
-    //         await deleteBranchManager(id);
-    //         fetchBranchManagers();
-    //     } catch (error) {
-    //         alert("Failed to delete Branch Manager");
-    //     }
-    // }
-
-    const disableBranchManager = async (email: string) => {
-        if (!window.confirm("Disable this Branch Manager?")) return;
-
-        setActionLoading(email);
         try {
-            await updateBranchManagerStatus(email, "DISABLED");
+            await deleteBranchManager(id);
             fetchBranchManagers();
-        } 
-        catch {
-            alert("Failed to disable Branch Manager");
-        } finally {
-            setActionLoading(null);
+        } catch (error) {
+            alert("Failed to delete Branch Manager");
         }
-    };
+    }
 
-    const enableBranchManager = async (email: string) => {
-        if (!window.confirm("Enable this Branch Manager?")) return;
-
-        setActionLoading(email);
-        try {
-            await updateBranchManagerStatus(email, "ACTIVE");
-            fetchBranchManagers();
-        } catch {
-            alert("Failed to enable Branch Manager");
-        }
-        setActionLoading(null);
+    const openEdit = (branch: any) => {
+        setIsSave("Save")
+        setEditingId(branch.userId);
+        setIsOpen(true);
+        setEmail(branch.email);
+        setBranchId(branch.branchId);
     };
 
     return (
@@ -231,30 +218,20 @@ const BranchManagerTab = () => {
                             <td>{bm.branchName}</td>
                             <td>{bm.status}</td>
                             <td className="flex gap-3 items-center">
-                                {bm.status === "ACTIVE" ? (
                                 <button
-                                    disabled={actionLoading === bm.email}
-                                    onClick={() => disableBranchManager(bm.email)}
-                                    className="w-30 px-4 py-2 bg-red-500 hover:bg-red-400 text-white rounded-lg shadow-md transition disabled:opacity-50"
-                                >
-                                    {actionLoading === bm.email ? "Disabling..." : "Disable"}
+                                    onClick={() => openEdit(bm)}
+                                    className="text-red-600 hover:text-red-900"
+                                    title="Update Manager"
+                                    >
+                                        <Edit className="w-7 h-7" />
                                 </button>
-                                ) : (
                                 <button
-                                    disabled={actionLoading === bm.email}
-                                    onClick={() => enableBranchManager(bm.email)}
-                                    className="w-30 px-4 py-2 bg-green-500 hover:bg-green-400 text-white rounded-lg shadow-md transition disabled:opacity-50"
-                                >
-                                    {actionLoading === bm.email ? "Enabling..." : "Enable"}
-                                </button>
-                                )}
-                                {/* <button
                                     onClick={() => onDeleteManager(bm?.userId)}
                                     className="text-red-600 hover:text-red-900"
-                                    title="Delete Order"
+                                    title="Delete Manager"
                                     >
                                         <Trash2 className="w-7 h-7" />
-                                </button> */}
+                                </button>
                             </td>
                             </tr>
                         ))}                    
@@ -280,6 +257,7 @@ const BranchManagerTab = () => {
                             value={email}
                             type="email"
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={editingId ? true : false}
                         />
                     </div>
 
@@ -310,7 +288,8 @@ const BranchManagerTab = () => {
                             onClick={addBranchManager}
                             className="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition"
                         >
-                            {pageLoading ? "Saving.." : "Save"}
+                            {/* {pageLoading ? "Saving.." : "Save"} */}
+                            {isSave === "Save" ? pageLoading ? "Saving..." : "Save" : isSave === "Add" ? pageLoading ? "Adding..." : "Add" : "Save"}
                         </button>
                         <button
                             onClick={() => setIsOpen(false)}
