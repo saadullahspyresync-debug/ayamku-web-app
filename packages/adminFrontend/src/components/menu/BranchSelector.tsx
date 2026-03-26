@@ -20,9 +20,9 @@ export const BranchSelector = ({
           <button
             key={b.branchId || b._id}
             type="button"
-            onClick={() => onToggle(b._id || b.branchId)}
+            onClick={() => onToggle(b.branchId || b._id)}
             className={`px-3 py-1 border rounded ${
-              selectedBranchIds.includes(b._id || b.branchId)
+              selectedBranchIds.includes(b.branchId || b._id)
                 ? "bg-yellow-500 text-white"
                 : "bg-gray-100 hover:bg-gray-200"
             }`}

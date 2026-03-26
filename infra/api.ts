@@ -869,10 +869,10 @@ export function ApiStack(
   ); // PROTECTED
 
   api.route(
-    "PATCH /items/{id}",
+    "PUT /items/{id}",
     {
       handler: "packages/functions/src/item/update.main",
-      name: `${$app.name}-${$app.stage}-Update-Item`,
+      name: `${$app.name}-${$app.stage}-Update-Items`,
       link: [storage.tables.item, storage.tables.category],
       ...defaultFunctionProps,
     },

@@ -25,8 +25,8 @@ export const DealCard = ({ deal, onEdit, onDelete }: DealCardProps) => {
         ))}
       </div>
 
-      <div className="text-xs text-gray-500 mt-2">
-        Items:{" "}
+      <div className="text-xs text-gray-500 mt-2" key={deal.itemId}>
+        Items:
         {deal.comboItems && deal.comboItems.length > 0
           ? deal.comboItems
               .map((ci) => `${ci?.name || "Unknown Item"} (x${ci.quantity || 1})`)

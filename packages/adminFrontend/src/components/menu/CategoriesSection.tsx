@@ -79,7 +79,10 @@ export const CategoriesSection = ({
       setIsSave(false);
       setIsOpen(false);
     } catch (err) {
-      console.error("Save error:", err);
+      alert("Save error, please try again.");
+    }
+    finally {
+      setIsSave(false);
     }
   };
 
@@ -89,7 +92,7 @@ export const CategoriesSection = ({
       await deleteCategory(id);
       onRefresh();
     } catch (err) {
-      console.error("Delete error:", err);
+      alert("Save error, please try again.");
     }
   };
 
@@ -108,7 +111,7 @@ export const CategoriesSection = ({
       <div className="grid md:grid-cols-2 gap-4">
         {categories.map((cat) => (
           <CategoryCard
-            key={cat._id}
+            key={cat.categoryId}
             category={cat}
             onEdit={openEdit}
             onDelete={handleDelete}

@@ -32,7 +32,7 @@ export const createItem = (data: Item | FormData, isFormData = false) =>
 // UPDATE an item by ID (admin only)
 // Pass second argument as true if sending FormData
 export const updateItem = (id: string, data: Partial<Item> | FormData, isFormData = false) =>
-  api.patch<Item>(`/items/${id}`, data, {
+  api.put<Item>(`/items/${id}`, data, {
     headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
   });
 

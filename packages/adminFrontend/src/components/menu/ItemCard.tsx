@@ -47,7 +47,7 @@ export const ItemCard = ({
           Edit
         </button>
         <button
-          onClick={() => onDelete(item._id || item.itemId)}
+          onClick={() => onDelete(item.itemId || item._id)}
           className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
         >
           Delete

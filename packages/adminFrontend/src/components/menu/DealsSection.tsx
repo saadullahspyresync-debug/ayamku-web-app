@@ -66,7 +66,7 @@ export const DealsSection = ({
           : deal.categoryId || "",
       comboItems: existingComboItems,
       availableBranches:
-        deal.availableBranches?.map((b: any) => b.branchId) || [],
+        deal.availableBranches || [],
       active: deal.status === "active" || deal.active || true,
       images: [],
       existingImages: deal.images || [],
@@ -113,7 +113,10 @@ export const DealsSection = ({
       setIsOpen(false);
       setIsSave(false);
     } catch (err) {
-      console.error("Save error:", err);
+      alert("Save error, please try again.");
+    }
+    finally {
+      setIsSave(false);
     }
   };
 
@@ -123,7 +126,7 @@ export const DealsSection = ({
       await deleteDeal(id);
       onRefresh();
     } catch (err) {
-      console.error("Delete error:", err);
+      alert("Save error, please try again.");
     }
   };
 
@@ -142,7 +145,7 @@ export const DealsSection = ({
       <div className="grid md:grid-cols-2 gap-4">
         {deals.map((deal) => (
           <DealCard
-            key={deal._id}
+            key={deal.itemId}
             deal={deal}
             onEdit={openEdit}
             onDelete={handleDelete}

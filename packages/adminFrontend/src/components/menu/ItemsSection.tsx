@@ -44,7 +44,7 @@ export const ItemsSection = ({
   };
 
   const openEdit = (item: MenuItem) => {
-    setEditing(item._id || item.itemId);
+    setEditing(item.itemId || item._id);
     setForm({
       name: item.name || "",
       price: String(item.price) || "",
@@ -59,7 +59,7 @@ export const ItemsSection = ({
       status: item.status || "active",
       images: [],
       existingImages: item?.images && item?.images?.map((img) => img?.url) || [],
-      branches: item.availableBranches?.map((b: any) => b.branchId) || [],
+      branches: item.availableBranches || [],
     });
     setIsOpen(true);
   };
@@ -106,7 +106,10 @@ export const ItemsSection = ({
       setIsOpen(false);
       setIsSave(false)
     } catch (err) {
-      console.error("Save error:", err);
+      alert("Server error, please try again" );
+    }
+    finally {
+      setIsSave(false);
     }
   };
 
@@ -116,7 +119,7 @@ export const ItemsSection = ({
       await deleteItem(id);
       onRefresh();
     } catch (err) {
-      console.error("Delete error:", err);
+      alert("Server error, please try again" );
     }
   };
 
@@ -135,7 +138,7 @@ export const ItemsSection = ({
       <div className="grid md:grid-cols-2 gap-4">
         {menuItems.map((item) => (
           <ItemCard
-            key={item._id}
+            key={item.itemId}
             item={item}
             categories={categories}
             onEdit={openEdit}
