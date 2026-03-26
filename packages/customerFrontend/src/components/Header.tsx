@@ -49,6 +49,7 @@ const Header: React.FC = () => {
               <img
                 src="https://ayamku-web.s3.us-east-1.amazonaws.com/ayamku-logo.svg"
                 alt="Ayamku Logo"
+                className="w-16 h-auto md:w-28 transition-all"
               />
             </Link>
 
