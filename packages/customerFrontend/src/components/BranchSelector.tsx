@@ -185,17 +185,17 @@ const BranchSelector: React.FC = () => {
                 <div
                   key={branch.branchId}
                  onClick={() => {
-                    if (!isOpen) {
-                      toast.error(`${branch.name} is currently closed`);
-                      return; // ❌ prevent selection
-                    }
+                    // if (!isOpen) {
+                    //   toast.error(`${branch.name} is currently closed`);
+                    //   return; // ❌ prevent selection
+                    // }
                     setTempSelected(branch.branchId); // ✅ only select if open
                   }}
                   className={`flex justify-between items-center border p-3 rounded cursor-pointer transition-colors ${
                     tempSelected === branch.branchId
                       ? "bg-red-50 border-red-300"
                       : "bg-gray-50 hover:bg-gray-100"
-                   } ${!isOpen ? "opacity-50 cursor-not-allowed" : ""}`}
+                    }`} //} ${!isOpen ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <div className="flex flex-col">
                     <span className="font-medium">{branch.name}</span>

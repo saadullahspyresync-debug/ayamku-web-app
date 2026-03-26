@@ -246,7 +246,7 @@ const DeliveryModal: React.FC = () => {
                           <option
                             key={branch.branchId}
                             value={branch.branchId}
-                            disabled={!open} // 🚫 Disable closed branches
+                            // disabled={!open} // 🚫 Disable closed branches
                           >
                             {branch.name} – {getDisplayTiming(branch)}
                             {open ? "- Open" : "- Closed"}

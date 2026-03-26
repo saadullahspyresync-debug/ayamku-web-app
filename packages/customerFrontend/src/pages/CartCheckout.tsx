@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { uuidv4 } from "zod";
 import confetti from "canvas-confetti";
 import PaymentForm from "@/components/PaymentForm";
+import { DateTime } from "luxon";
 
 const CartCheckout = () => {
   const { t } = useTranslation();
@@ -287,7 +288,55 @@ const CartCheckout = () => {
 
   const { subtotal, redemptionDiscount, total, freeItemsCount } = calculateTotals();
 
+  const isBranchOpenNow = (branch: any): boolean => {
+      if (!branch?.businessHours || !branch?.timezone) return false;
+  
+      // 1. Get current time SPECIFIC to the branch timezone
+      // This ignores the customer's phone time and gets the real time at the branch
+      const branchNow = DateTime.now().setZone(branch.timezone);
+      
+      const currentDay = branchNow.weekday; // Luxon: 1=Mon, 5=Fri, 7=Sun
+      const currentMinutes = branchNow.hour * 60 + branchNow.minute;
+  
+      const toMinutes = (time: string) => {
+        if (!time) return 0;
+        const [h, m] = time.split(":").map(Number);
+        return h * 60 + m;
+      };
+  
+      let openTimeStr: string;
+      let closeTimeStr: string;
+  
+      // Luxon uses 5 for Friday. Match your logic:
+      if (currentDay === 5) {
+        if (branch.businessHours.friday?.isClosed) return false;
+        openTimeStr = branch.businessHours.friday.open;
+        closeTimeStr = branch.businessHours.friday.close;
+      } else {
+        openTimeStr = branch.businessHours.open;
+        closeTimeStr = branch.businessHours.close;
+      }
+  
+      if (!openTimeStr || !closeTimeStr) return false;
+  
+      const openMin = toMinutes(openTimeStr);
+      const closeMin = toMinutes(closeTimeStr);
+  
+      // 2. Overnight logic (same as yours, but using branch local minutes)
+      if (closeMin < openMin) {
+        return currentMinutes >= openMin || currentMinutes <= closeMin;
+      }
+      return currentMinutes >= openMin && currentMinutes <= closeMin;
+    };
+
   const handleOrder = async () =>{
+    const isOpen = isBranchOpenNow(selectedBranch);
+
+    if (!isOpen) {
+      toast.error("Branch is closed. Please select another branch.");
+      return;
+    }
+    
     useCartStore.setState({
       typeOfOrder: orderType,
       arrivalTime: pickupTime,
