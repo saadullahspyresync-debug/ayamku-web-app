@@ -9,20 +9,21 @@ const TABLE_NAME = Resource.SeasonalHighlight.name;
 export async function main(event: APIGatewayProxyEvent) {
   try {
      // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
-    const result = await dynamoDb.send(
-      new ScanCommand({
-        TableName: TABLE_NAME,
-        FilterExpression:
-          "#status = :active AND #startDate <= :now AND #endDate >= :now",
-        ExpressionAttributeNames: {
-          "#status": "status",
-          "#startDate": "startDate",
-          "#endDate": "endDate",
-        },
-        ExpressionAttributeValues: { ":active": "active",  ":now": today },
-      })
-    );
+    // const today = new Date().toISOString().split('T')[0];
+    // const result = await dynamoDb.send(
+    //   new ScanCommand({
+    //     TableName: TABLE_NAME,
+    //     FilterExpression:
+    //       "#status = :active AND #startDate <= :now AND #endDate >= :now",
+    //     ExpressionAttributeNames: {
+    //       "#status": "status",
+    //       "#startDate": "startDate",
+    //       "#endDate": "endDate",
+    //     },
+    //     ExpressionAttributeValues: { ":active": "active",  ":now": today },
+    //   })
+    // );
+    const result = await dynamoDb.send(new ScanCommand({ TableName: TABLE_NAME }));
 
     const items = result.Items || [];
 

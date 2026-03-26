@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import seasonalHighlightsApi from "../../api/seasonalHighlight";
+import { createSeasonalHighlight, updateSeasonalHighlight, deleteSeasonalHighlight} from "../../api/seasonalHighlight";
 import { uploadImagesToS3 } from "../../api/uploadApi";
 import { Highlight, HighlightForm, Branch } from "./types";
 import { HighlightCard } from "./HighlightCard";
@@ -87,18 +87,17 @@ export const HighlightSection = ({
       }
 
       if (editingHighlight) {
-        await seasonalHighlightsApi.updateSeasonalHighlight(
+        await updateSeasonalHighlight(
           editingHighlight,
           payload
         );
       } else {
-        await seasonalHighlightsApi.createSeasonalHighlight(payload);
+        await createSeasonalHighlight(payload);
       }
 
       await onRefresh();
       setHighlightOpen(false);
     } catch (err) {
-      console.error("Failed to save highlight", err);
       alert("Failed to save highlight");
     } finally {
       setSaving(false);
@@ -109,10 +108,10 @@ export const HighlightSection = ({
     if (!window.confirm("Are you sure you want to delete this highlight?"))
       return;
     try {
-      await seasonalHighlightsApi.deleteSeasonalHighlight(id);
+      await deleteSeasonalHighlight(id);
       await onRefresh();
     } catch (err) {
-      console.error("Failed to delete highlight", err);
+      alert("Failed to delete highlight");
     }
   };
 
