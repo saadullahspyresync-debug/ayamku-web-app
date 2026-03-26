@@ -53,7 +53,7 @@ const Header: React.FC = () => {
             </Link>
 
             {/* Search Bar */}
-            <div className="hidden md:flex flex-1 items-center space-x-4 mx-5">
+            <div className="hidden lg:flex flex-1 items-center space-x-4 mx-5">
               <div className="relative w-full ml-4">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <img src="/assets/icons/search-icon.svg" />
@@ -68,12 +68,12 @@ const Header: React.FC = () => {
             {/* <div className="flex items-center space-x-4"> */}
             <div className="flex items-center space-x-2 sm:space-x-4">
 
-              {/* NEW: Mobile Search Button (Visible only on small screens) */}
+              {/* NEW: Map Button (Visible only on small screens) */}
               <button
-                onClick={() => navigate?.("/search")}
+                onClick={() => setBranchModalOpen(true)}
                 className="md:hidden p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
               >
-                <Search size={20} />
+                <MapPin size={20} />
               </button>
 
               {/* Cart */}
@@ -212,6 +212,20 @@ const Header: React.FC = () => {
               >
                 {t("contact_us")}
               </Link>
+
+              <Link
+                to="/search"
+                className="block md:hidden flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Search</span>
+                  <span>
+                    <img src="/assets/icons/search-icon.svg" />
+                  </span>
+                </div>
+              </Link>
+              
 
               {/* Logout */}
               {isAuthenticated && (
