@@ -79,7 +79,7 @@ export const CategoriesSection = ({
       setIsSave(false);
       setIsOpen(false);
     } catch (err) {
-      alert("Save error, please try again.");
+      alert("Server error, please try again" );
     }
     finally {
       setIsSave(false);
@@ -92,7 +92,7 @@ export const CategoriesSection = ({
       await deleteCategory(id);
       onRefresh();
     } catch (err) {
-      alert("Save error, please try again.");
+      alert("Server error, please try again" );
     }
   };
 

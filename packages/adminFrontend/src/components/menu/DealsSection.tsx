@@ -113,7 +113,7 @@ export const DealsSection = ({
       setIsOpen(false);
       setIsSave(false);
     } catch (err) {
-      alert("Save error, please try again.");
+      alert("Server error, please try again" );
     }
     finally {
       setIsSave(false);
@@ -126,7 +126,7 @@ export const DealsSection = ({
       await deleteDeal(id);
       onRefresh();
     } catch (err) {
-      alert("Save error, please try again.");
+      alert("Server error, please try again" );
     }
   };
 

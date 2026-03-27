@@ -144,11 +144,7 @@ const BranchManagerTab = () => {
             fetchBranchManagers();
         } 
         catch (err: any) {
-            console.error("DEBUG: Catching error before request sent:", err);
-            setError(err.response?.data?.error);
-            setTimeout(() => {
-                setError("")
-            }, 3000);            
+            alert("Server error, please try again" );         
         } 
         finally {
             setPageLoading(false);
@@ -162,7 +158,7 @@ const BranchManagerTab = () => {
             await deleteBranchManager(id);
             fetchBranchManagers();
         } catch (error) {
-            alert("Failed to delete Branch Manager");
+            alert("Server error, please try again" );
         }
     }
 
@@ -250,7 +246,7 @@ const BranchManagerTab = () => {
                 <div className="space-y-4">
                     {/* Email */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">Email:</label>
+                        <label className="block text-sm font-medium mb-1">Email: <span className="text-red-500">*</span></label>
                         <input
                             className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                             placeholder="Email"
@@ -266,7 +262,7 @@ const BranchManagerTab = () => {
                     {/* Branch */}
                     <div>
                         <label className="block text-sm font-medium mb-1">
-                            Branch:
+                            Branch: <span className="text-red-500">*</span>
                         </label>
                         <select
                             className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
