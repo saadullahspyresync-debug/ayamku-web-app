@@ -192,7 +192,7 @@ const Login: React.FC = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-ayamku-primary hover:bg-red-600 text-white py-3"
+              className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white py-3"
             >
               {isSubmitting ? "Signing in..." : "Login"}
             </Button>

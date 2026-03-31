@@ -68,7 +68,7 @@ export const CartSidebar = () => {
                     ${getTotalPrice().toFixed(2)}
                   </span>
                 </div>
-                <Button className="w-full bg-ayamku-primary hover:bg-red-600 text-white" onClick={() => {navigate("/cart")}}>
+                <Button className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white" onClick={() => {navigate("/cart")}}>
                    {isAuthenticated
                   ? t("cart.place_order")
                   : t("cart.login_to_order")}

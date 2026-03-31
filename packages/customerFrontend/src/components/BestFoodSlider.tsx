@@ -218,7 +218,7 @@ const BestFoodSlider: React.FC<BestFoodSliderProps> = ({
                     className={`absolute bottom-4 right-4 ${
                       addingItem === item.itemId
                         ? "bg-green-600 scale-110"
-                        : "bg-red-600 hover:bg-red-700 md:opacity-0 md:group-hover:opacity-100"
+                        : "bg-ayamku-primary hover:bg-ayamku-primary md:opacity-0 md:group-hover:opacity-100"
                     } text-white p-3 rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 disabled:cursor-not-allowed`}
                     aria-label="Add to cart"
                   >
@@ -247,7 +247,7 @@ const BestFoodSlider: React.FC<BestFoodSliderProps> = ({
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-red-600 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-ayamku-primary transition-colors">
                     {item.name}
                   </h3>
 
@@ -264,9 +264,9 @@ const BestFoodSlider: React.FC<BestFoodSliderProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-full">
-                      <Star className="w-4 h-4 text-red-600 fill-red-600" />
-                      <span className="text-sm font-semibold text-red-600">
-                        {item.loyaltyPoints}
+                      <Star className="w-4 h-4 text-ayamku-primary fill-ayamku-primary" />
+                      <span className="text-sm font-semibold text-ayamku-primary">
+                        {item?.loyaltyPoints}
                       </span>
                     </div>
                   </div>

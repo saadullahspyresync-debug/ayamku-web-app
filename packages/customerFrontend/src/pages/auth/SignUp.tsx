@@ -241,7 +241,7 @@ const SignUp: React.FC = () => {
               </>
             )}
 
-            <Button type="submit" disabled={isLoading} className="w-full bg-ayamku-primary hover:bg-red-600 text-white py-3 mt-6">
+            <Button type="submit" disabled={isLoading} className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white py-3 mt-6">
               {isLoading ? "Processing..." : step === "signup" ? "Create account" : "Verify Email"}
             </Button>
           </form>

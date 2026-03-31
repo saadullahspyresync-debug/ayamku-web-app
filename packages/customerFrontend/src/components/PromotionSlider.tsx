@@ -101,7 +101,7 @@ const PromotionsSlider: React.FC = () => {
                     {promo.startDate} → {promo.endDate}
                   </p>
                   <Button
-                    className="bg-yellow-500 text-black font-semibold hover:bg-yellow-400 transition w-fit"
+                    className="bg-ayamku-primary text-black font-semibold hover:bg-ayamku-primary/80 transition w-fit"
                     onClick={handleOrderNow}
                   >
                     Order Now

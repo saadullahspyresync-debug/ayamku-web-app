@@ -235,7 +235,7 @@ const ForgotPassword: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isResetSubmitting}
-                className="w-full bg-ayamku-primary hover:bg-red-600 text-white py-3 mt-6"
+                className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white py-3 mt-6"
               >
                 {isResetSubmitting ? "Resetting..." : "Reset Password"}
               </Button>
@@ -322,7 +322,7 @@ const ForgotPassword: React.FC = () => {
             <Button
               type="submit"
               disabled={isForgotSubmitting}
-              className="w-full bg-ayamku-primary hover:bg-red-600 text-white py-3"
+              className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white py-3"
             >
               {isForgotSubmitting ? "Sending..." : "Continue"}
             </Button>

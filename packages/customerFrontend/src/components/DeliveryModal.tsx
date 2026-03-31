@@ -185,7 +185,7 @@ const DeliveryModal: React.FC = () => {
               </div>
               <Button
                 onClick={handleDeliveryClick}
-                className="w-full bg-ayamku-primary hover:bg-red-600 text-white"
+                className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white"
                 disabled={true}
               >
                 {t("deliveryModal.continue_delivery")}
@@ -260,7 +260,7 @@ const DeliveryModal: React.FC = () => {
                 <Button
                   onClick={handlePickupSubmit}
                   disabled={isSubmitDisabled}
-                  className="w-full bg-ayamku-primary hover:bg-red-600 text-white disabled:bg-gray-300"
+                  className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white disabled:bg-gray-300"
                 >
                   {t("deliveryModal.select")}
                 </Button>

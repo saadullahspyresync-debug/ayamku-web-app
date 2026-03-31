@@ -86,7 +86,7 @@ const VerifyEmail: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Email not found</h2>
           <p className="text-gray-600 mb-4">Please sign up first</p>
           <Link to="/auth/signup">
-            <Button className="bg-ayamku-primary hover:bg-red-600">
+            <Button className="bg-ayamku-primary hover:bg-ayamku-primary/80">
               Go to Sign Up
             </Button>
           </Link>
@@ -157,7 +157,7 @@ const VerifyEmail: React.FC = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-ayamku-primary hover:bg-red-600 text-white py-3"
+              className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white py-3"
             >
               {isSubmitting ? "Verifying..." : "Verify Email"}
             </Button>

@@ -304,7 +304,7 @@ const ContactForm = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-ayamku-primary hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
