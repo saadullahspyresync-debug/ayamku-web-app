@@ -4,31 +4,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const HeroSlider = ({ t, navigate, sliders }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Sample slides - replace with your actual images and content
-  const slides = [
-    {
-      image: "/assets/images/home-hero-section.png",
-      title: "The most flavorful chicken in Brunei",
-      subtitle: "Taste the tradition",
-    },
-    {
-      image: "/assets/images/slide-2.jpg",
-      title: "Crispy & Delicious",
-      subtitle: "Made fresh daily",
-    },
-    {
-      image: "/assets/images/slide-3.jpg",
-      title: "Family Meals & More",
-      subtitle: "Share the joy",
-    },
-  ];
-
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setCurrentSlide((prev) => (prev + 1) % sliders.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setCurrentSlide((prev) => (prev - 1 + sliders.length) % sliders.length);
   };
 
   const goToSlide = (index) => {
@@ -76,7 +57,7 @@ const HeroSlider = ({ t, navigate, sliders }) => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={() => navigate?.("/menu")}
-                    className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg rounded-md transition-colors duration-300"
+                    className="bg-ayamku-primary hover:bg-ayamku-primary text-white px-8 py-3 text-lg rounded-md transition-colors duration-300"
                   >
                     Order Now
                   </button>
@@ -111,7 +92,7 @@ const HeroSlider = ({ t, navigate, sliders }) => {
 
       {/* Dots Navigation */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-        {slides.map((_, index) => (
+        {sliders.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
