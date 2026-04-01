@@ -16,14 +16,15 @@ const HeroSlider = ({ t, navigate, sliders }) => {
     setCurrentSlide(index);
   };
 
-  // Auto-advance slider
   useEffect(() => {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <section className="relative h-[600px] lg:h-[700px] overflow-hidden">
+    <section className="relative w-full overflow-hidden
+      h-[280px] sm:h-[380px] md:h-[480px] lg:h-[600px] xl:h-[700px]">
+
       {/* Slides Container */}
       <div className="relative w-full h-full">
         {sliders.map((slide, index) => (
@@ -33,37 +34,50 @@ const HeroSlider = ({ t, navigate, sliders }) => {
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
           >
-            {/* Background Image */}
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${slide.imageUrl.url})`,
-                backgroundPosition: "center",
-                backgroundSize: "cover",
-              }}
+            {/* Background Image — <img> for better mobile rendering */}
+            <img
+              src={slide.imageUrl.url}
+              alt={slide.title ?? ""}
+              className="absolute inset-0 w-full h-full object-cover object-center"
             />
+
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-[#03081F]/60" />
 
             {/* Content */}
-            <div className="relative container mx-auto px-4 h-full flex items-center">
-              <div className="text-white max-w-3xl">
-                <h1 className="text-4xl lg:text-6xl font-bold mb-4 leading-tight animate-fade-in">
+            <div className="relative container mx-auto px-4 sm:px-6 h-full flex items-center">
+              <div className="text-white w-full max-w-3xl">
+
+                {/* Title */}
+                <h1 className="font-bold leading-tight mb-2 sm:mb-4
+                  text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
                   {slide.title}
                 </h1>
-                <p className="text-xl lg:text-2xl mb-8 text-gray-200">
+
+                {/* Subtitle */}
+                <p className="text-gray-200 mb-4 sm:mb-8
+                  text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl
+                  line-clamp-2 sm:line-clamp-none">
                   {slide.subtitle}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+
+                {/* CTA Buttons */}
+                <div className="flex flex-row gap-2 sm:gap-4">
                   <button
                     onClick={() => navigate?.("/menu")}
-                    className="bg-ayamku-primary hover:bg-ayamku-primary text-white px-8 py-3 text-lg rounded-md transition-colors duration-300"
+                    className="bg-ayamku-primary hover:opacity-90 text-white rounded-md transition-colors duration-300 font-medium
+                      px-4 py-2 text-sm
+                      sm:px-6 sm:py-2.5 sm:text-base
+                      md:px-8 md:py-3 md:text-lg"
                   >
                     Order Now
                   </button>
                   <button
                     onClick={() => navigate?.("/menu")}
-                    className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 text-lg rounded-md transition-all duration-300"
+                    className="border-2 border-white text-white hover:bg-white hover:text-gray-900 rounded-md transition-all duration-300 font-medium
+                      px-4 py-2 text-sm
+                      sm:px-6 sm:py-2.5 sm:text-base
+                      md:px-8 md:py-3 md:text-lg"
                   >
                     View Menu
                   </button>
@@ -74,32 +88,38 @@ const HeroSlider = ({ t, navigate, sliders }) => {
         ))}
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows — smaller on mobile */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 z-10"
+        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2
+          bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
+          transition-all duration-300 z-10
+          p-1.5 sm:p-2 md:p-3"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 z-10"
+        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2
+          bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
+          transition-all duration-300 z-10
+          p-1.5 sm:p-2 md:p-3"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
       </button>
 
-      {/* Dots Navigation */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+      {/* Dots Navigation — tighter on mobile */}
+      <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 z-10">
         {sliders.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? "bg-white w-8"
-                : "bg-white/50 hover:bg-white/75"
+                ? "bg-white w-5 sm:w-8"
+                : "bg-white/50 hover:bg-white/75 w-2 sm:w-3"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

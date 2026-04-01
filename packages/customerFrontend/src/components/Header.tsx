@@ -39,19 +39,30 @@ const Header: React.FC = () => {
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 text-gray-600 hover:text-ayamku-primary transition-colors"
+              className="flex items-center justify-start pl-0 sm:justify-between md:justify-normal"
             >
               <Menu size={24} />
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center">
-              <img
-                src="https://ayamku-web.s3.us-east-1.amazonaws.com/ayamku-logo.svg"
-                alt="Ayamku Logo"
-                className="w-16 h-auto md:w-28 transition-all"
-              />
-            </Link>
+            {!isAuthenticated ? (
+              <Link to="/" className="flex items-center">
+                <img
+                  src="https://ayamku-web.s3.us-east-1.amazonaws.com/ayamku-logo.svg"
+                  alt="Ayamku Logo"
+                  className="w-14 h-10 md:w-28 transition-all"
+                  // className="h-8 w-14 sm:h-10 md:h-12 lg:h-14 lg:w-24 transition-all"
+                />
+              </Link>
+            ) : (
+              <Link to="/" className="flex items-center pr-14">
+                <img
+                  src="https://ayamku-web.s3.us-east-1.amazonaws.com/ayamku-logo.svg"
+                  alt="Ayamku Logo"
+                  className="w-18 h-8 md:w-28 transition-all"
+                />
+              </Link>
+            )}
 
             {/* Search Bar */}
             <div className="hidden lg:flex flex-1 items-center space-x-4 mx-5">
@@ -67,24 +78,16 @@ const Header: React.FC = () => {
 
             {/* Right Side */}
             {/* <div className="flex items-center space-x-4"> */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-
-              {/* NEW: Map Button (Visible only on small screens) */}
-              <button
-                onClick={() => setBranchModalOpen(true)}
-                className="md:hidden p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
-              >
-                <MapPin size={20} />
-              </button>
+            <div className="flex items-center space-x-2 sm:space-x-4">              
 
               {/* Cart */}
               <button
                 onClick={toggleCart}
-                className="relative p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
+                className="relative p-[2px] md:p-[7px] text-gray-600 hover:text-ayamku-primary border border-gray-200 rounded-lg"
               >
                 <img src="/assets/icons/cart-basket-icon.svg"/>
                 {totalCartItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-ayamku-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-ayamku-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium">
                     {totalCartItems}
                   </span>
                 )}
@@ -223,6 +226,19 @@ const Header: React.FC = () => {
                   <span>Search</span>
                   <span>
                     <img src="/assets/icons/search-icon.svg" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link
+                to="#"
+                className="block md:hidden flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
+                onClick={() => setBranchModalOpen(true)}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Branch Locator</span>
+                  <span>
+                    <MapPin size={20} />
                   </span>
                 </div>
               </Link>
