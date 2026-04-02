@@ -248,6 +248,13 @@ export function StorageStack() {
     },
   });
 
+  const whyUsTable = new sst.aws.Dynamo("WhyUs", {
+    fields: {
+      id: "string",
+    },
+    primaryIndex: { hashKey: "id" },
+  });
+
   return {
     tables: {
       notes: notesTable,
@@ -267,6 +274,7 @@ export function StorageStack() {
       pointsTransaction: pointsTransactionTable,
       redemptionHistory: redemptionHistoryTable,
       contactForm: contactFormTable,
+      whyUs: whyUsTable,
     },
   };
 }

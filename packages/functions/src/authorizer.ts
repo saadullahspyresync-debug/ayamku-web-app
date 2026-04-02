@@ -69,6 +69,10 @@ const rolePermissions = {
 
     // ====== auth me ======
     { path: "/auth/me", methods: ["GET"] },
+
+    // ====== why us =======
+    { path: "/why-us", methods: ["GET", "POST"] },
+    { path: "/why-us/{id}", methods: ["DELETE"] },
   ],
   [Resource.UserGroups.Branch_Manager]: [
     // ===== Order Management =====

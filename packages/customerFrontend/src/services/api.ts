@@ -563,4 +563,19 @@ export const sendContactMessage = async (
   return res.data;
 };
 
+// -------------------- Why us
+
+export interface WhyUsItem {
+    id?: string;
+    title: string;
+    description: string;
+    image: File | string | null;
+}
+
+export const fetchWhyUsItems = async (): Promise<WhyUsItem[]> => {
+  const res: AxiosResponse<{ success: boolean; data: WhyUsItem[] }> =
+    await api.get("/why-us");
+  return res.data.data;
+};
+
 export default api;

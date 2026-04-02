@@ -3,24 +3,24 @@ import easyToOrderImage from "/assets/images/easy-to-order.png";
 import bestQuality from "/assets/images/best-quality.png";
 import orderAndPay from "/assets/images/order-and-pay.png";
 
-const WhyChooseSection = ({ t }: any) => {
-  const services = [
-    {
-      icon: easyToOrderImage,
-      title: t("why_choose.services.easy_to_order.title"),
-      description: t("why_choose.services.easy_to_order.description"),
-    },
-    {
-      icon: bestQuality,
-      title: t("why_choose.services.fastest_delivery.title"),
-      description: t("why_choose.services.fastest_delivery.description"),
-    },
-    {
-      icon: orderAndPay,
-      title: t("why_choose.services.best_quality.title"),
-      description: t("why_choose.services.best_quality.description"),
-    },
-  ];
+const WhyChooseSection = ({ t, whyUsItems }) => {
+  // const services = [
+  //   {
+  //     icon: easyToOrderImage,
+  //     title: t("why_choose.services.easy_to_order.title"),
+  //     description: t("why_choose.services.easy_to_order.description"),
+  //   },
+  //   {
+  //     icon: bestQuality,
+  //     title: t("why_choose.services.fastest_delivery.title"),
+  //     description: t("why_choose.services.fastest_delivery.description"),
+  //   },
+  //   {
+  //     icon: orderAndPay,
+  //     title: t("why_choose.services.best_quality.title"),
+  //     description: t("why_choose.services.best_quality.description"),
+  //   },
+  // ];
 
   return (
     <section className="py-16 bg-gray-50">
@@ -35,11 +35,11 @@ const WhyChooseSection = ({ t }: any) => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {services.map((service, index) => (
+          {whyUsItems.map((service, index) => (
             <div key={index} className="text-center flex flex-col items-center">
               <div className="flex items-center justify-center mb-4">
                 <img 
-                  src={service.icon} 
+                  src={service.imageUrl} 
                   alt={service.title} 
                   className="h-40 w-45 object-contain" 
                 />

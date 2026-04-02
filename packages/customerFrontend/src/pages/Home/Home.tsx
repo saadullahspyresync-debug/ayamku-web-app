@@ -4,6 +4,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useBranchStore } from "@/store/branchStore";
 import { useDeliveryStore } from "@/store/deliveryStore";
 import { fetchBranchItems, fetchSeasonalHighlights, fetchSliders } from "@/services/api";
+import { fetchWhyUsItems } from "@/services/api";
 import { useTranslation } from "react-i18next";
 
 import DeliveryModal from "@/components/DeliveryModal";
@@ -27,6 +28,7 @@ const Home: React.FC = () => {
 
   const [categories, setCategories] = useState([]);
   const [highlights, setHighlights] = useState([]);
+  const [whyUsItems, setWhyUsItems] = useState([]);
   const [sliders, setSliders] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,9 +76,21 @@ const Home: React.FC = () => {
       }
     }
 
+    const loadWhyUs = async () => {
+      try {
+        const res = await fetchWhyUsItems();
+        setWhyUsItems(res || []);
+      } catch (error) {
+        console.error("Failed to load Why Us items:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadHighlights();
     loadSliders();
     loadBranchData();
+    loadWhyUs();
   }, [selectedBranch, setDeliveryModalOpen]);
 
   const handleAddToCart = (item : CartItem) => {
@@ -108,7 +122,6 @@ const Home: React.FC = () => {
     );
   }
 
-
   // Show loader only when branch is selected and data is loading
   if (selectedBranch && loading) {
     return <ModernLoader message="Loading delicious content..." />;
@@ -119,7 +132,7 @@ const Home: React.FC = () => {
       {isDeliveryModalOpen && <DeliveryModal />}
       <HeroSection t={t} navigate={navigate} sliders={sliders} />
       <HighlightsPopup highlights={highlights} onOrderClick={() => navigate("/menu")}/>
-      <WhyChooseSection t={t} />
+      <WhyChooseSection t={t} whyUsItems={whyUsItems} />
       <ExploreMenuSection t={t} categories={categories} loading={loading} />
       <BestFoodSection t={t} items={items} loading={loading} onAddToCart={handleAddToCart} />
        {/* <RewardsWidget /> */}
