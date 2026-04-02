@@ -8,7 +8,7 @@ export const HeroBanner = () => {
       <img
         src="/assets/images/conatct-us-banner.png"
         alt={t("hero.title")}
-        className="w-full h-80 object-cover"
+        className="w-full h-40 object-cover sm:h-60 md:h-80"
       />
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center text-white">
