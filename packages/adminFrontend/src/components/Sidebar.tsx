@@ -27,6 +27,7 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
   { id: "points", label: "Points", icon: ChartBarIcon, roles: ["Admin", "Branch_Manager"] },
   { id: "highlights", label: "Highlights", icon: SparklesIcon, roles: ["Admin"]  },
   { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin", "Branch_Manager"]  },
+  { id: "footer", label: "Footer Settings", icon: UserGroupIcon, roles: ["Admin"]  },
 ];
 
   const handleLogout = async () => {

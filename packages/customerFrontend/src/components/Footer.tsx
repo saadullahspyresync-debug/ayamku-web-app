@@ -1,9 +1,25 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { fetchFooterData, FooterSettings } from "@/services/api";
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
+  const [footerData, setFooterData] = useState<FooterSettings | null>(null);
+
+  useEffect(() => {
+    const getFooter = async () => {
+      try {
+        const data = await fetchFooterData();
+        setFooterData(data);
+      } catch (error) {
+        console.error("Failed to load footer data:", error);
+      }
+    };
+
+    getFooter();
+  }, []);
+
 
   return (
     <footer className="bg-gray-900 text-white py-12 md:mt-24">
@@ -33,7 +49,7 @@ const Footer: React.FC = () => {
                   to="/menu"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {t("footer.explore_menu")}
+                  {footerData ? footerData.quickLinks?.exploreMenu : t("footer.explore_menu")}
                 </Link>
               </li>
               <li>
@@ -41,7 +57,7 @@ const Footer: React.FC = () => {
                   to="/restaurant-locator"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {t("footer.restaurant_locator")}
+                  {footerData ? footerData.quickLinks?.restaurantLocator : t("footer.restaurant_locator")}
                 </Link>
               </li>
               <li>
@@ -49,7 +65,7 @@ const Footer: React.FC = () => {
                   to="/contact"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {t("footer.contact_us")}
+                  {footerData ? `footerData.quickLinks?.contactUs` : t("footer.contact_us")}
                 </Link>
               </li>
               <li>
@@ -57,7 +73,7 @@ const Footer: React.FC = () => {
                   to="/about"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {t("footer.about_us")}
+                  {footerData ? footerData.quickLinks?.aboutUs : t("footer.about_us")}
                 </Link>
               </li>
             </ul>
@@ -67,10 +83,10 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-semibold mb-4">{t("footer.contact")}</h3>
             <ul className="space-y-2 text-gray-400">
-              <li>{t("footer.address_line1")}</li>
-              <li>{t("footer.address_line2")}</li>
-              <li>{t("footer.phone")}</li>
-              <li>{t("footer.email")}</li>
+              <li>{footerData ? footerData.contactInfo?.address1 : t("footer.address1")}</li>
+              <li>{footerData ? footerData.contactInfo?.address2 : t("footer.address2")}</li>
+              <li>{footerData ? `+ ${footerData.contactInfo?.phone}` : t("footer.phone")}</li>
+              <li>{footerData ? footerData.contactInfo?.email : t("footer.email")}</li>
             </ul>
           </div>
         </div>

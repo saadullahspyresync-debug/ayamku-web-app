@@ -702,6 +702,22 @@ export function ApiStack(
     protectedRouteConfig
   ); // PROTECTED (already done)
 
+
+  // ======= Footer Settings =========
+  api.route("GET /footer", {
+    handler: "packages/functions/src/footer/get.main",
+    link: [storage.tables.footer],
+    ...defaultFunctionProps,
+  });
+
+  api.route("POST /footer", {
+    handler: "packages/functions/src/footer/update.main",
+    link: [storage.tables.footer],
+    ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
   // ======= Branch Manager ==============
 
   api.route(
