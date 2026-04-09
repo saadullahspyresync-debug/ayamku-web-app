@@ -298,7 +298,7 @@ export function StorageStack() {
       redemptionHistory: redemptionHistoryTable,
       contactForm: contactFormTable,
       themeTemplate: themeTemplateTable,
-      appSettings: appSettingsTable
+      appSettings: appSettingsTable,
       whyUs: whyUsTable,
     },
   };

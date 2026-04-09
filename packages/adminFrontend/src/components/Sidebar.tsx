@@ -9,8 +9,7 @@ import {
   SparklesIcon,
   ShoppingBagIcon,
   UsersIcon,
-  SwatchIcon
-  UsersIcon,
+  SwatchIcon,
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 
