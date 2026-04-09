@@ -29,7 +29,8 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
   { id: "highlights", label: "Highlights", icon: SparklesIcon, roles: ["Admin"]  },
   { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin", "Branch_Manager"]  },
   { id: "theme", label: "Theme", icon: SwatchIcon, roles: ["Admin"]  },
-  { id: "why", label: "Why Us", icon: SparklesIcon, roles: ["Admin"]  }
+  { id: "why", label: "Why Us", icon: SparklesIcon, roles: ["Admin"]  },
+  { id: "footer", label: "Footer Settings", icon: UserGroupIcon, roles: ["Admin"]  },
 ];
 
   const handleLogout = async () => {

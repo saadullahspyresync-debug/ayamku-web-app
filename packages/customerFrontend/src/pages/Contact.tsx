@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapPin, Phone, Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
-import { sendContactMessage, ContactMessage } from "@/services/api"; // Import from your API service
+import { sendContactMessage, ContactMessage, FooterSettings, fetchFooterData } from "@/services/api"; // Import from your API service
 import { useBranchStore } from "@/store/branchStore";
 
 const ContactForm = () => {
@@ -19,6 +19,7 @@ const ContactForm = () => {
     status: "new",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [footerData, setFooterData] = useState<FooterSettings | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
@@ -27,6 +28,20 @@ const ContactForm = () => {
   }>({ type: null, message: "" });
 
   const branchId = useBranchStore.getState().selectedBranch?.branchId;
+
+  
+  useEffect(() => {
+    const getFooter = async () => {
+      try {
+        const data = await fetchFooterData();
+        setFooterData(data);
+      } catch (error) {
+        console.error("Failed to load footer data:", error);
+      }
+    };
+
+    getFooter();
+  }, []);
 
   // --- Manual Validation Function ---
   const validate = () => {
@@ -159,19 +174,19 @@ const ContactForm = () => {
               <div className="flex items-start space-x-4">
                 <MapPin className="text-ayamku-primary mt-1" size={20} />
                 <div>
-                  <p className="font-medium">{t("contact.address.line1")}</p>
-                  <p className="text-gray-600">{t("contact.address.line2")}</p>
+                  <p className="font-medium">{footerData? footerData.contactInfo.address1 : t("contact.address.line1")}</p>
+                  <p className="text-gray-600">{footerData? footerData.contactInfo.address2 : t("contact.address.line2")}</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-4">
                 <Phone className="text-ayamku-primary" size={20} />
-                <p>{t("contact.phone")}</p>
+                <p>{footerData? `+ ${footerData.contactInfo.phone}` : t("contact.phone")}</p>
               </div>
 
               <div className="flex items-center space-x-4">
                 <Mail className="text-ayamku-primary" size={20} />
-                <p>{t("contact.email")}</p>
+                <p>{footerData? footerData.contactInfo.email : t("contact.email")}</p>
               </div>
             </div>
           </div>

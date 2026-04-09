@@ -582,4 +582,32 @@ export const fetchWhyUsItems = async (): Promise<WhyUsItem[]> => {
   return res.data.data;
 };
 
+// -------------------- Footer ------------------------
+export interface QuickLinks {
+    exploreMenu: string;
+    restaurantLocator: string;
+    contactUs: string;
+    aboutUs: string;
+}
+
+export interface ContactInfo {
+    address1: string;
+    address2: string;
+    phone: string;
+    email: string;
+}
+
+export interface FooterSettings {
+    quickLinks: QuickLinks;
+    contactInfo: ContactInfo;
+}
+
+/**
+ * Fetches the dynamic footer configuration for the website.
+ */
+export const fetchFooterData = async (): Promise<FooterSettings> => {
+    const res: AxiosResponse<FooterSettings> = await api.get("/footer");
+    return res.data;
+};
+
 export default api;

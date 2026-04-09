@@ -78,6 +78,9 @@ const rolePermissions = {
     // ====== why us =======
     { path: "/why-us", methods: ["GET", "POST"] },
     { path: "/why-us/{id}", methods: ["DELETE"] },
+
+    // ====== footer ======
+    { path: "/footer", methods: ["GET", "POST"] }
   ],
   [Resource.UserGroups.Branch_Manager]: [
     // ===== Order Management =====

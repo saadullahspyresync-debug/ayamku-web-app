@@ -278,6 +278,13 @@ export function StorageStack() {
     primaryIndex: { hashKey: "id" },
   });
 
+  const footerTable = new sst.aws.Dynamo("Footer", {
+    fields: {
+      id: "string",
+    },
+    primaryIndex: { hashKey: "id" },
+  });
+
   return {
     tables: {
       notes: notesTable,
@@ -300,6 +307,7 @@ export function StorageStack() {
       themeTemplate: themeTemplateTable,
       appSettings: appSettingsTable,
       whyUs: whyUsTable,
+      footer: footerTable,
     },
   };
 }
