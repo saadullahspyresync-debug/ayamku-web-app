@@ -233,7 +233,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden z-10 mx-4">
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 relative">
+        <div className="bg-ayamku-primary text-white p-6 relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -243,13 +243,13 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
 
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <User className="text-red-500" size={40} />
+              <User className="text-ayamku-primary" size={40} />
             </div>
             <div>
               <h2 className="text-2xl font-bold">
                 {user?.name || user?.username || "User"}
               </h2>
-              <p className="text-red-100">{user?.email}</p>
+              <p className="text-white">{user?.email}</p>
             </div>
           </div>
 
@@ -257,10 +257,10 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
           <div className="mt-4 bg-white/20 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <Gift className="text-red-500" size={24} />
+                <Gift className="text-ayamku-primary" size={24} />
               </div>
               <div>
-                <p className="text-red-100 text-sm">Points Balance</p>
+                <p className="text-white text-sm">Points Balance</p>
                 <p className="text-2xl font-bold">
                   {pointsBalance.toLocaleString()}
                 </p>
@@ -268,7 +268,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
             </div>
             <button
               onClick={handleBrowseRewards}
-              className="px-4 py-2 bg-white text-red-500 rounded-lg font-semibold hover:bg-red-50 transition-colors"
+              className="px-4 py-2 bg-white text-ayamku-primary rounded-lg font-semibold hover:bg-red-50 transition-colors"
             >
               Redeem
             </button>
@@ -276,12 +276,12 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex border-b ">
           <button
             onClick={() => setActiveTab("profile")}
             className={`flex-1 py-4 px-6 font-semibold transition-colors ${
               activeTab === "profile"
-                ? "text-red-500 border-b-2 border-red-500"
+                ? "text-ayamku-primary border-b-2 border-ayamku-primary"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -291,7 +291,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
             onClick={() => setActiveTab("points")}
             className={`flex-1 py-4 px-6 font-semibold transition-colors ${
               activeTab === "points"
-                ? "text-red-500 border-b-2 border-red-500"
+                ? "text-ayamku-primary border-b-2 border-ayamku-primary"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -301,7 +301,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
             onClick={() => setActiveTab("orders")}
             className={`flex-1 py-4 px-6 font-semibold transition-colors ${
               activeTab === "orders"
-                ? "text-red-500 border-b-2 border-red-500"
+                ? "text-ayamku-primary border-b-2 border-ayamku-primary"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -357,13 +357,13 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
                 </div> */}
               </div>
 
-              <button onClick={handleLogout} className="w-full py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
+              <button onClick={handleLogout} className="w-full py-3 bg-ayamku-primary text-white rounded-lg font-semibold hover:bg-ayamku-primary transition-colors">
                 Logout
               </button>
             </div>
           ) : activeTab === "points" ? (
             <div className="space-y-4">
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg p-6 text-white">
+              <div className="bg-ayamku-primary rounded-lg p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm opacity-90">Your Points Balance</p>
@@ -483,7 +483,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
 
                   <button
                     onClick={handleBrowseRewards}
-                    className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                    className="w-full py-3 bg-ayamku-primary text-white rounded-lg font-semibold hover:bg-ayamku-primary transition-colors"
                   >
                     Browse Rewards
                   </button>

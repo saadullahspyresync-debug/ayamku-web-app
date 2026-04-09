@@ -129,7 +129,7 @@ const Cart: React.FC = () => {
               </div>
               <Button
                 onClick={handleCheckout}
-                className="w-full bg-ayamku-primary hover:bg-red-600 text-white"
+                className="w-full bg-ayamku-primary hover:bg-ayamku-primary/80 text-white"
               >
                 {isAuthenticated
                   ? t("cart.place_order")

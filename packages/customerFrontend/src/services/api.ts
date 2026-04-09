@@ -563,4 +563,8 @@ export const sendContactMessage = async (
   return res.data;
 };
 
+export const getActiveTheme = () => {
+  return api.get("/theme/active");
+};
+
 export default api;

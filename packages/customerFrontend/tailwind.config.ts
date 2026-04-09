@@ -63,7 +63,7 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         ayamku: {
-          primary: "#E53E3E",
+          primary: "var(--ayamku-primary, #e53e3e)",
           secondary: "#FFD700",
           dark: "#2D1810",
           light: "#FFF8F0",

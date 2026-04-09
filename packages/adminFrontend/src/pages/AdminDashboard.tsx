@@ -5,6 +5,7 @@ import BranchesTab from "./tabs/BranchesTab";
 import MenuTab from "./tabs/MenuTab";
 import PromotionsTab from "./tabs/PromotionsTab";
 import HighlightsTab from "./tabs/HighlightsTab";
+import Theme from "./tabs/Theme";
 
 // ✅ New imports
 import ProfileBadge from "../components/ProfileBadge";
@@ -42,8 +43,10 @@ export default function Dashboard() {
         return <OrdersTab />;
       case "points":
         return <PointsTab />;
-        case "contact":
-        return <ContactMessages />;
+      case "contact":
+      return <ContactMessages />;
+      case "theme":
+        return <Theme />;
       default:
         return <OverviewTab />;
     }

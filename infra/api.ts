@@ -702,6 +702,52 @@ export function ApiStack(
     protectedRouteConfig
   ); // PROTECTED (already done)
 
+  // ======= Theme ==========
+
+  api.route(
+    "POST /theme/templates",
+    {
+      handler: "packages/functions/src/theme/create.main",
+      name: `${$app.name}-${$app.stage}-Create-Themes`,
+      link: [storage.tables.themeTemplate],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
+    "GET /theme/templates",
+    {
+      handler: "packages/functions/src/theme/getAll.main",
+      name: `${$app.name}-${$app.stage}-Get-Themes`,
+      link: [storage.tables.themeTemplate],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
+    "GET /theme/active",
+    {
+      handler: "packages/functions/src/theme/getActive.main",
+      name: `${$app.name}-${$app.stage}-Get-Active-Themes`,
+      link: [storage.tables.appSettings],
+      ...defaultFunctionProps,
+    },
+    // protectedRouteConfig
+  );
+
+  api.route(
+    "POST /theme/active/update",
+    {
+      handler: "packages/functions/src/theme/updateLive.main",
+      name: `${$app.name}-${$app.stage}-Update-Live-Themes`,
+      link: [storage.tables.appSettings],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
   // ======= Branch Manager ==============
 
   api.route(

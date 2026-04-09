@@ -69,6 +69,11 @@ const rolePermissions = {
 
     // ====== auth me ======
     { path: "/auth/me", methods: ["GET"] },
+
+    // ====== theme ======
+    { path: "/theme/templates", methods: ["POST", "GET"] },
+    // { path: "/theme/active", methods: ["GET"] },
+    { path: "/theme/active/update", methods: ["POST", "GET"] },
   ],
   [Resource.UserGroups.Branch_Manager]: [
     // ===== Order Management =====
@@ -100,6 +105,7 @@ const rolePermissions = {
     { path: "/redemptions/update-status", methods: ["POST"] },
     { path: "/secure-acceptance", methods: ["POST"] },
     { path: "/payment-success", methods: ["GET"] },
+    { path: "/theme/active", methods: ["GET"] },
   ],
 };
 

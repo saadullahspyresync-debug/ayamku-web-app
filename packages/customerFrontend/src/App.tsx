@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Contact from "./pages/Contact";
@@ -31,138 +32,140 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <HashRouter>
-          <Routes>
-            {/* Auth Routes - No Layout - Guest Only */}
-            <Route
-              path="/auth/login"
-              element={
-                <ProtectedRoute requireAuth={false}>
-                  <Login />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/auth/signup"
-              element={
-                <ProtectedRoute requireAuth={false}>
-                  <SignUp />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/auth/forgot-password"
-              element={
-                <ProtectedRoute requireAuth={false}>
-                  <ForgotPassword />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/auth/verify" element={<VerifyEmail />} />
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <Routes>
+              {/* Auth Routes - No Layout - Guest Only */}
+              <Route
+                path="/auth/login"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Login />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/auth/signup"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <SignUp />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/auth/forgot-password"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ForgotPassword />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/auth/verify" element={<VerifyEmail />} />
 
-            {/* Main App Routes - With Layout - Public */}
-            <Route
-              path="/"
-              element={
-                <Layout>
-                  <Home />
-                </Layout>
-              }
-            />
-            <Route
-              path="/menu"
-              element={
-                <Layout>
-                  <Menu />
-                </Layout>
-              }
-            />
-            <Route
-              path="/contact"
-              element={
-                <Layout>
-                  <Contact />
-                </Layout>
-              }
-            />
-            <Route
-              path="/about"
-              element={
-                <Layout>
-                  <AboutUs />
-                </Layout>
-              }
-            />
-            <Route
-              path="/restaurant-locator"
-              element={
-                <Layout>
-                  <RestaurantLocator />
-                </Layout>
-              }
-            />
-            <Route
-              path="/search"
-              element={
-                <Layout>
-                  <SearchPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/rewards"
-              element={
-                <Layout>
-                  <Rewards />
-                </Layout>
-              }
-            />
-            <Route
-              path="/payment-success"
-              element={
-                <Layout>
-                  <PaymentSuccess />
-                </Layout>
-              }
-            />
-            <Route
-              path="/payment-failure"
-              element={
-                <Layout>
-                  <PaymentFailure />
-                </Layout>
-              }
-            />
-            <Route
-              path="/order-history"
-              element={
-                <Layout>
-                  <OrderHistory />
-                </Layout>
-              }
-            />
-
-
-            {/* Protected Routes - Requires Authentication */}
-            <Route
-              path="/cart"
-              element={
-                <ProtectedRoute requireAuth={true}>
+              {/* Main App Routes - With Layout - Public */}
+              <Route
+                path="/"
+                element={
                   <Layout>
-                    <CartCheckout />
+                    <Home />
                   </Layout>
-                </ProtectedRoute>
-              }
-            />
+                }
+              />
+              <Route
+                path="/menu"
+                element={
+                  <Layout>
+                    <Menu />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/contact"
+                element={
+                  <Layout>
+                    <Contact />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <Layout>
+                    <AboutUs />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/restaurant-locator"
+                element={
+                  <Layout>
+                    <RestaurantLocator />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/search"
+                element={
+                  <Layout>
+                    <SearchPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/rewards"
+                element={
+                  <Layout>
+                    <Rewards />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/payment-success"
+                element={
+                  <Layout>
+                    <PaymentSuccess />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/payment-failure"
+                element={
+                  <Layout>
+                    <PaymentFailure />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/order-history"
+                element={
+                  <Layout>
+                    <OrderHistory />
+                  </Layout>
+                }
+              />
 
-            {/* Catch-all routes */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </HashRouter>
-      </TooltipProvider>
+
+              {/* Protected Routes - Requires Authentication */}
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Layout>
+                      <CartCheckout />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Catch-all routes */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </HashRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

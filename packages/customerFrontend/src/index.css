@@ -51,6 +51,8 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --ayamku-primary: #e53e3e;
   }
 
   .dark {
@@ -109,7 +111,8 @@ input:focus-visible {
 /* Custom scrollbar for full body */
 * {
   scrollbar-width: thin !important; /* For Firefox */
-  scrollbar-color: #e53e3e rgb(235, 235, 235) !important; /* For Firefox */
+  scrollbar-color: var(--ayamku-primary) rgb(235, 235, 235) !important;
+  /* scrollbar-color: #e53e3e rgb(235, 235, 235) !important; /* For Firefox */
 }
 
 /* WebKit Browsers */
@@ -123,7 +126,7 @@ input:focus-visible {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #e53e3e !important;
+  background-color: var(--ayamku-primary) !important;
   border-radius: 9999px !important;
   border: 2px solid white !important; /* Creates space around the thumb */
 }
@@ -188,9 +191,9 @@ input:focus-visible {
   width: 60px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(farthest-side, #e53e3e 94%, #0000) top/10px 10px
+  background: radial-gradient(farthest-side, var(---ayamku-primary) 94%, #0000) top/10px 10px
       no-repeat,
-    conic-gradient(from 90deg at 10px 10px, #e53e3e 90deg, #0000 0);
+    conic-gradient(from 90deg at 10px 10px, var(--ayamku-primary) 90deg, #0000 0);
   animation: bubble 1s infinite linear;
 }
 @keyframes bubble {
@@ -199,3 +202,10 @@ input:focus-visible {
   }
 }
 
+[class*="bg-ayamku-primary"] {
+  transition: filter 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+[class*="bg-ayamku-primary"]:hover {
+  filter: brightness(0.9); 
+}

@@ -372,7 +372,7 @@ const CartCheckout = () => {
                   </h2>
                   <p className="text-gray-600 mb-6">{t("cart.addItems")}</p>
                   <Link to="/menu">
-                    <Button className="bg-ayamku-primary hover:bg-red-600 text-white">
+                    <Button className="bg-ayamku-primary hover:bg-ayamku-primary/80 text-white">
                       {t("cart.browseMenu")}
                     </Button>
                   </Link>
@@ -581,7 +581,7 @@ const CartCheckout = () => {
                           <Button
                             size="sm"
                             onClick={() => handleAddToCart(item)}
-                            className="bg-ayamku-primary hover:bg-red-600 text-white rounded-full w-8 h-8 p-0 flex items-center justify-center"
+                            className="bg-ayamku-primary hover:bg-ayamku-primary/80 text-white rounded-full w-8 h-8 p-0 flex items-center justify-center"
                           >
                             <Plus size={16} />
                           </Button>
@@ -765,7 +765,7 @@ const CartCheckout = () => {
                     onClick={handleOrder}
                     // onClick={() => setIsPaymentModalOpen(true)}
                     disabled={isPlacingOrder}
-                    className="bg-ayamku-primary text-white w-full h-12 text-lg rounded-xl flex items-center justify-center"
+                    className="bg-ayamku-primary hover:bg-ayamku-primary/80 text-white w-full h-12 text-lg rounded-xl flex items-center justify-center"
                   >
                     {isPlacingOrder ? (
                       <>

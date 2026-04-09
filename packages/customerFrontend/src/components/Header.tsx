@@ -116,7 +116,7 @@ const Header: React.FC = () => {
                   {/* <div className="flex items-center space-x-2 px-3 py-[9px] bg-ayamku-primary text-white rounded-lg border border-ayamku-primary"> */}
                   <Button
                     onClick={() => setIsProfileModalOpen(true)} // ✅ Open modal on click
-                    className="flex items-center space-x-2 px-3 py-[9px] bg-ayamku-primary text-white rounded-lg border border-ayamku-primary hover:bg-red-600 transition-colors"
+                    className="flex items-center space-x-2 px-3 py-[9px] bg-ayamku-primary text-white rounded-lg border border-ayamku-primary hover:bg-ayamku-primary/80 transition-colors"
                   >
                     <User size={16} />
                     <span className="text-sm font-medium">
@@ -128,7 +128,7 @@ const Header: React.FC = () => {
                 // </div>
                 <Button
                   onClick={handleLogin}
-                  className="bg-ayamku-primary hover:bg-red-600 text-white px-6"
+                  className="bg-ayamku-primary hover:bg-ayamku-primary/80 text-white px-6"
                 >
                   {t("login")}
                 </Button>
@@ -249,7 +249,7 @@ const Header: React.FC = () => {
                 <div className="pt-4 border-t">
                   <Button
                     onClick={handleLogout}
-                    className="bg-ayamku-primary hover:bg-red-600 text-white w-full"
+                    className="bg-ayamku-primary hover:bg-ayamku-primary/80text-white w-full"
                   >
                     {t("logout")}
                   </Button>

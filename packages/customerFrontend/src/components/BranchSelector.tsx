@@ -225,7 +225,7 @@ const BranchSelector: React.FC = () => {
         <div className="px-4 mb-4 flex items-center justify-center">
           <Button
             onClick={handleSelect}
-            className="bg-ayamku-primary hover:bg-red-600 text-white w-full"
+            className="bg-ayamku-primary hover:bg-ayamku-primary/80 text-white w-full"
             disabled={!tempSelected}
           >
             {t("branch_selector.select")}

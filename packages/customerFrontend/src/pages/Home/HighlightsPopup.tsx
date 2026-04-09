@@ -48,9 +48,9 @@ const HighlightsPopup = ({ highlights = [], onOrderClick }) => {
              text-white font-sans font-semibold  /* 👈 Ensures it uses your app’s main font */
              px-3 py-6 rounded-r-2xl shadow-xl hover:shadow-red-500/60 
              transition-all duration-500 z-40 group hover:px-4 
-             backdrop-blur-md overflow-hidden select-none"
+             backdrop-blur-md overflow-hidden select-none bg-ayamku-primary"
         style={{
-          background: `linear-gradient(135deg, ${themeColor} 0%, rgb(220 38 38) 50%, rgb(185 28 28) 100%)`,
+          background: `linear-gradient(135deg, bg-ayamku-primary, rgb(220 38 38) 50%, rgb(185 28 28) 100%)`,
         }}
         aria-label="Open highlights"
       >
@@ -113,7 +113,7 @@ const HighlightsPopup = ({ highlights = [], onOrderClick }) => {
               ></div>
 
               {/* Glass overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent backdrop-blur-sm"></div>
+              <div className="absolute inset-0 bg-ayamku-primary"></div>
 
               <div className="flex items-center gap-5 relative z-10">
                 <div className="relative">
@@ -177,8 +177,8 @@ const HighlightsPopup = ({ highlights = [], onOrderClick }) => {
                       <div className="max-w-xl mx-auto w-full">
                         {/* Decorative Element */}
                         <div
-                          className="w-16 h-1.5 rounded-full mb-6"
-                          style={{ backgroundColor: themeColor }}
+                          className="w-16 h-1.5 rounded-full mb-6 bg-ayamku-primary"
+                          // style={{ backgroundColor: themeColor }}
                         ></div>
 
                         <h3 className="text-4xl lg:text-5xl font-black text-gray-900 mb-6 leading-tight">
@@ -192,8 +192,8 @@ const HighlightsPopup = ({ highlights = [], onOrderClick }) => {
                         {/* Modern CTA Button */}
                         <Button
                           onClick={() => onOrderClick?.()}
-                          className="w-full text-white py-6 rounded-2xl font-bold text-xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-1 relative overflow-hidden group border-2 border-red-400"
-                          style={{ backgroundColor: themeColor }}
+                          className="w-full bg-ayamku-primary text-white py-6 rounded-2xl font-bold text-xl shadow-xl hover:bg-ayamku-primary hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
+                          // style={{ backgroundColor: themeColor }}
                         >
                           <span className="relative z-10">Order Now</span>
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>

@@ -83,7 +83,7 @@ export const MenuItem = ({
           <div className="group bg-white/60 rounded-full w-36 h-36 absolute -right-20 -bottom-20">
             <button
               onClick={() => onAddToCart(item)}
-              className="group-hover:bg-ayamku-primary absolute top-7 left-7 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center transition"
+              className="group-hover:bg-ayamku-primary/80 absolute top-7 left-7 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center transition"
             >
               +
             </button>

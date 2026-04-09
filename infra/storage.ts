@@ -248,6 +248,29 @@ export function StorageStack() {
     },
   });
 
+  const themeTemplateTable = new sst.aws.Dynamo("ThemeTemplate", {
+    fields: {
+      templateId: "string",
+      themeName: "string",
+    },
+    primaryIndex: { hashKey: "templateId" },
+    // You can add a Global Index if you want to fetch by name later
+    globalIndexes: {
+      nameIndex: { hashKey: "themeName" },
+    },
+  });
+
+  const appSettingsTable = new sst.aws.Dynamo("AppSettings", {
+    fields: {
+      id: "string",          // Always "ACTIVE_THEME"
+      templateId: "string",  // References which template is currently live
+    },
+    primaryIndex: { hashKey: "id" },
+    globalIndexes: {
+      templateIndex: { hashKey: "templateId" },
+    },
+  });
+
   return {
     tables: {
       notes: notesTable,
@@ -267,6 +290,8 @@ export function StorageStack() {
       pointsTransaction: pointsTransactionTable,
       redemptionHistory: redemptionHistoryTable,
       contactForm: contactFormTable,
+      themeTemplate: themeTemplateTable,
+      appSettings: appSettingsTable
     },
   };
 }
