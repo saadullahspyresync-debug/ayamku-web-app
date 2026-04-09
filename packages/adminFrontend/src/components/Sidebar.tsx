@@ -10,6 +10,7 @@ import {
   ShoppingBagIcon,
   UsersIcon,
   SwatchIcon
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 
@@ -29,6 +30,7 @@ export default function Sidebar({ activeTab, setActiveTab } : any) {
   { id: "highlights", label: "Highlights", icon: SparklesIcon, roles: ["Admin"]  },
   { id: "contact", label: "Contact Requests", icon: UserGroupIcon, roles: ["Admin", "Branch_Manager"]  },
   { id: "theme", label: "Theme", icon: SwatchIcon, roles: ["Admin"]  },
+  { id: "why", label: "Why Us", icon: SparklesIcon, roles: ["Admin"]  }
 ];
 
   const handleLogout = async () => {

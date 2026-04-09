@@ -748,6 +748,44 @@ export function ApiStack(
     protectedRouteConfig
   );
 
+  // ======= WHy US =========
+
+  api.route(
+    "GET /why-us",
+    {
+      handler: "packages/functions/src/whyUs/getAll.main",
+      name: `${$app.name}-${$app.stage}-Get-WhyUs`,
+      link: [storage.tables.whyUs],
+      ...defaultFunctionProps,
+    },
+    // protectedRouteConfig
+  );
+
+  api.route(
+    "POST /why-us",
+    {
+      handler: "packages/functions/src/whyUs/create.main",
+      name: `${$app.name}-${$app.stage}-Create-WhyUs`,
+      link: [storage.tables.whyUs],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
+    "DELETE /why-us/{id}",
+    {
+      handler: "packages/functions/src/whyUs/delete.main",
+      name: `${$app.name}-${$app.stage}-Delete-WhyUs`,
+      link: [storage.tables.whyUs],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+
+  // =========================
+
   // ======= Branch Manager ==============
 
   api.route(

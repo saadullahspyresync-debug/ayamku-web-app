@@ -6,6 +6,7 @@ import MenuTab from "./tabs/MenuTab";
 import PromotionsTab from "./tabs/PromotionsTab";
 import HighlightsTab from "./tabs/HighlightsTab";
 import Theme from "./tabs/Theme";
+import WhyUs from "./tabs/WhyUs";
 
 // ✅ New imports
 import ProfileBadge from "../components/ProfileBadge";
@@ -47,6 +48,10 @@ export default function Dashboard() {
       return <ContactMessages />;
       case "theme":
         return <Theme />;
+      case "contact":
+        return <ContactMessages />;
+      case "why":
+        return <WhyUs />;
       default:
         return <OverviewTab />;
     }

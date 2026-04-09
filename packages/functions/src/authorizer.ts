@@ -74,6 +74,10 @@ const rolePermissions = {
     { path: "/theme/templates", methods: ["POST", "GET"] },
     // { path: "/theme/active", methods: ["GET"] },
     { path: "/theme/active/update", methods: ["POST", "GET"] },
+
+    // ====== why us =======
+    { path: "/why-us", methods: ["GET", "POST"] },
+    { path: "/why-us/{id}", methods: ["DELETE"] },
   ],
   [Resource.UserGroups.Branch_Manager]: [
     // ===== Order Management =====

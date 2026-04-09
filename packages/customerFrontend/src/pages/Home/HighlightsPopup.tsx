@@ -145,7 +145,7 @@ const HighlightsPopup = ({ highlights = [], onOrderClick }) => {
             <div className="relative h-[calc(92vh-88px)] bg-gradient-to-br from-gray-50 to-gray-100">
               {highlights.map((highlight, index) => (
                 <div
-                  key={highlight.id}
+                  key={highlight.highlightId}
                   className={`absolute inset-0 transition-all duration-700 ${
                     index === currentSlide
                       ? "opacity-100 scale-100"
