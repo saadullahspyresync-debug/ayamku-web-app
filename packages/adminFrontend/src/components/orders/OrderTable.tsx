@@ -11,6 +11,7 @@ interface OrderTableProps {
   onViewOrder: (orderId: string) => void;
   onStatusUpdate: (orderId: string, status: Order['status']) => void;
   onDeleteOrder: (orderId: string) => void;
+  isAdmin: boolean;
 }
 
 export default function OrderTable({
@@ -19,6 +20,7 @@ export default function OrderTable({
   onViewOrder,
   onStatusUpdate,
   onDeleteOrder,
+  isAdmin,
 }: OrderTableProps) {
   const getStatusBadge = (status: Order['status']) => {
     const statusConfig = {
@@ -154,7 +156,7 @@ export default function OrderTable({
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   {getStatusBadge(order?.status)}
-                  <select
+                  {/* <select
                     value={order?.status}
                     onChange={(e) =>
                       onStatusUpdate(order?.orderId, e.target.value as Order['status'])
@@ -165,7 +167,7 @@ export default function OrderTable({
                     <option value="pending">Pending</option>
                     <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
-                  </select>
+                  </select> */}
                 </div>
               </td>
               {/* <td className="px-6 py-4 whitespace-nowrap">
@@ -185,13 +187,17 @@ export default function OrderTable({
                   >
                     <Eye className="w-5 h-5" />
                   </button>
-                  <button
-                    onClick={() => onDeleteOrder(order?.orderId)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Delete Order"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  {
+                    isAdmin && (
+                      <button
+                        onClick={() => onDeleteOrder(order?.orderId)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )
+                  }
                 </div>
               </td>
             </tr>

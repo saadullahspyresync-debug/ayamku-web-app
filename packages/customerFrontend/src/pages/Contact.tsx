@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { sendContactMessage, ContactMessage, FooterSettings, fetchFooterData } from "@/services/api"; // Import from your API service
 import { useBranchStore } from "@/store/branchStore";
+import { useTheme } from "@/contexts/ThemeProvider";
 
 const ContactForm = () => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -149,12 +151,14 @@ const ContactForm = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Banner */}
       <div className="relative h-full mx-[10px] sm:mx-[50px] my-[10px] sm:my-[50px] rounded-[12px] overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        <img
-          src="/assets/images/conatct-us-banner.png"
-          alt="Contact Banner"
-          className="w-full h-80 object-cover"
-        />
+        <div className="relative w-full h-40 sm:h-60 md:h-[400px] lg:h-[600px]">
+          <img
+            src={theme?.bannerImg ?? "/assets/images/conatct-us-banner.png"}
+            alt="Contact Banner"
+            className="absolute inset-0 w-full h-full object-center"
+          />
+          <div className="absolute inset-0 bg-black/10" />
+        </div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">

@@ -727,6 +727,17 @@ export function ApiStack(
   );
 
   api.route(
+    "DELETE /theme/templates/{id}",
+    {
+      handler: "packages/functions/src/theme/delete.main",
+      name: `${$app.name}-${$app.stage}-Delete-Themes`,
+      link: [storage.tables.themeTemplate],
+      ...defaultFunctionProps,
+    },
+    protectedRouteConfig
+  );
+
+  api.route(
     "GET /theme/active",
     {
       handler: "packages/functions/src/theme/getActive.main",

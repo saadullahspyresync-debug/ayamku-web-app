@@ -75,10 +75,9 @@ export default function OrdersTab() {
 
       const response = await getAllOrders(params);
 
-      setOrders(response.orders);
+      setOrders(response.orders.filter((order) => order.status === "completed"));
       setTotalOrders(response.total);
     } catch (error) {
-      // console.log("Error fetching orders:", error);
       toast.error("Failed to load orders");
     } finally {
       setLoading(false);
@@ -119,7 +118,6 @@ export default function OrdersTab() {
       setSelectedOrder(order);
       setIsDetailsModalOpen(true);
     } catch (error) {
-      // console.log("Error fetching order details:", error);
       toast.error("Failed to load order details");
     }
   };
@@ -141,7 +139,6 @@ export default function OrdersTab() {
         setSelectedOrder(updatedOrder);
       }
     } catch (error) {
-      // console.log("Error updating order status:", error);
       toast.error("Failed to update order status");
     }
   };
@@ -159,7 +156,6 @@ export default function OrdersTab() {
       fetchStats();
       setIsDetailsModalOpen(false);
     } catch (error) {
-      // console.log("Error deleting order:", error);
       toast.error("Failed to delete order");
     }
   };
@@ -175,7 +171,6 @@ export default function OrdersTab() {
       const updatedOrder = await getOrderById(orderId);
       setSelectedOrder(updatedOrder);
     } catch (error) {
-      // console.log("Error updating order:", error);
       toast.error("Failed to update order");
     }
   };
@@ -215,6 +210,7 @@ export default function OrdersTab() {
           onViewOrder={handleViewOrder}
           onStatusUpdate={handleStatusUpdate}
           onDeleteOrder={handleDeleteOrder}
+          isAdmin={isAdmin}
         />
 
         {/* Pagination */}

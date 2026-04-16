@@ -120,7 +120,7 @@ export default function OverviewTab() {
         />
         <StatCard
           title="Avg Order Value"
-          value={`$${stats.totalRevenue / stats.totalOrders || 0}`}
+          value={`$${stats.totalRevenue / stats.completedOrders || 0}`}
           icon={UsersIcon}
           iconColor="text-purple-500"
           bgColor="bg-purple-50"

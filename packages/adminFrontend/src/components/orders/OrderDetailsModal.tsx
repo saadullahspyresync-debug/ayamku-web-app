@@ -27,11 +27,11 @@ export default function OrderDetailsModal({
 
   const handleSave = () => {
     onUpdateOrder(order.orderId, {
-      customerName: editedOrder.customerName,
-      customerEmail: editedOrder.customerEmail,
-      customerPhone: editedOrder.customerPhone,
-      deliveryAddress: editedOrder.deliveryAddress,
-      notes: editedOrder.notes,
+      customerName: editedOrder?.user.fullName,
+      customerEmail: editedOrder?.user.email,
+      customerPhone: editedOrder?.user.phone,
+      deliveryAddress: editedOrder?.deliveryAddress,
+      notes: editedOrder?.specialInstructions,
     });
     setIsEditing(false);
   };
@@ -43,7 +43,7 @@ export default function OrderDetailsModal({
       cancelled: "text-red-600 bg-red-50",
     };
     return colors[status] || "text-gray-600 bg-gray-50";
-  };
+  };//console.log(order)
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -64,7 +64,7 @@ export default function OrderDetailsModal({
                   Order Details
                 </h3>
                 <p className="text-red-100 text-sm mt-1">
-                  Order ID: #{order.orderId}
+                  Order ID: #{order.orderId.toUpperCase()}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export default function OrderDetailsModal({
                   )} border-2 border-transparent focus:border-red-500 focus:outline-none`}
                 >
                   <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
                   <option value="preparing">Preparing</option>
                   <option value="ready">Ready</option>
                   <option value="delivered">Delivered</option>
@@ -137,7 +137,7 @@ export default function OrderDetailsModal({
                   Order Date
                 </div>
                 <p className="text-gray-900 font-semibold">
-                  {new Date(order.orderDate).toLocaleString()}
+                  {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -152,14 +152,14 @@ export default function OrderDetailsModal({
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editedOrder.customerName}
+                      value={editedOrder?.user.fullName}
                       onChange={(e) =>
-                        setEditedOrder({ ...editedOrder, customerName: e.target.value })
+                        setEditedOrder({ ...editedOrder, user: { ...editedOrder.user, fullName: e.target.value } })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
                     />
                   ) : (
-                    <p className="text-gray-900">{order.customerName}</p>
+                    <p className="text-gray-900">{order?.user.fullName}</p>
                   )}
                 </div>
 
@@ -172,14 +172,14 @@ export default function OrderDetailsModal({
                   {isEditing ? (
                     <input
                       type="email"
-                      value={editedOrder.customerEmail}
+                      value={editedOrder?.user.email}
                       onChange={(e) =>
-                        setEditedOrder({ ...editedOrder, customerEmail: e.target.value })
+                        setEditedOrder({ ...editedOrder, user: { ...editedOrder.user, email: e.target.value } })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
                     />
                   ) : (
-                    <p className="text-gray-900">{order.customerEmail}</p>
+                    <p className="text-gray-900">{order?.user.email}</p>
                   )}
                 </div>
 
@@ -192,14 +192,14 @@ export default function OrderDetailsModal({
                   {isEditing ? (
                     <input
                       type="tel"
-                      value={editedOrder.customerPhone}
+                      value={editedOrder?.user.phone}
                       onChange={(e) =>
-                        setEditedOrder({ ...editedOrder, customerPhone: e.target.value })
+                        setEditedOrder({ ...editedOrder, user: { ...editedOrder.user, phone: e.target.value } })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
                     />
                   ) : (
-                    <p className="text-gray-900">{order.customerPhone}</p>
+                    <p className="text-gray-900">{order?.user.phone}</p>
                   )}
                 </div>
 
@@ -252,7 +252,7 @@ export default function OrderDetailsModal({
                         <td className="px-4 py-2 text-gray-900">{item.name}</td>
                         <td className="px-4 py-2 text-center text-gray-900">{item.quantity}</td>
                         <td className="px-4 py-2 text-right text-gray-900">${item.price}</td>
-                        <td className="px-4 py-2 text-right font-semibold text-gray-900">${item.total}</td>
+                        <td className="px-4 py-2 text-right font-semibold text-gray-900">${item.quantity * item.price}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -267,7 +267,7 @@ export default function OrderDetailsModal({
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Tax:</span>
-                  <span className="text-gray-900 font-medium">${order.tax}</span>
+                  <span className="text-gray-900 font-medium">${order.tax || 0}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
                   <span>Total:</span>
@@ -289,14 +289,14 @@ export default function OrderDetailsModal({
                 <label className="text-sm font-medium text-gray-600 mb-1 block">Payment Status</label>
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                    order.paymentStatus === "paid"
+                    order.status === "completed"
                       ? "bg-green-100 text-green-800"
-                      : order.paymentStatus === "pending"
+                      : order.status === "pending"
                       ? "bg-yellow-100 text-yellow-800"
                       : "bg-red-100 text-red-800"
                   }`}
                 >
-                  {/* {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)} */}
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
               </div>
             </div>
@@ -306,14 +306,14 @@ export default function OrderDetailsModal({
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Order Notes</h4>
               {isEditing ? (
                 <textarea
-                  value={editedOrder.notes || ""}
-                  onChange={(e) => setEditedOrder({ ...editedOrder, notes: e.target.value })}
+                  value={editedOrder.specialInstructions || ""}
+                  onChange={(e) => setEditedOrder({ ...editedOrder, specialInstructions: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
                   rows={3}
                   placeholder="Add notes..."
                 />
               ) : (
-                <p className="text-gray-900">{order.notes || "No notes available"}</p>
+                <p className="text-gray-900">{order.specialInstructions || "No notes available"}</p>
               )}
             </div>
           </div>

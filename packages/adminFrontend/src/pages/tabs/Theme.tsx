@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAllThemeTemplates, createThemeTemplate, updateLiveTheme, getActiveTheme, ThemeTemplatePayload } from "../../api/theme";
+import { getAllThemeTemplates, createThemeTemplate, updateLiveTheme, getActiveTheme, ThemeTemplatePayload, deleteThemeTemplate } from "../../api/theme";
 import uploadImagesToS3 from "../../api/uploadApi";
 import Modal from "../../components/Modal";
 import { Loader } from "../../components/Loader";
@@ -71,7 +71,7 @@ const Theme = () => {
 
     const handleSetLive = async (tpl: any) => {
         if (!window.confirm(`Apply ${tpl.themeName} to the live website?`)) return;
-        // return console.log("Setting live theme:", tpl);
+        
         setPageLoading(true);
         try {
             // This tells the website: "Use these colors now"
@@ -92,6 +92,27 @@ const Theme = () => {
         }
     };
 
+    const handleDelete = async (tpl: any) => {
+        if (tpl.templateId === activeId) {
+            return alert("You cannot delete the currently live theme. Please switch to another theme first.");
+        }
+
+        if (!window.confirm(`Are you sure you want to delete "${tpl.themeName}"?`)) {
+            return;
+        }
+
+        setPageLoading(true);
+        try {
+            await deleteThemeTemplate(tpl.templateId);
+            await fetchData(); // Refresh the list
+        } catch (err) {
+            alert("Failed to delete theme. Please try again.");
+            console.error(err);
+        } finally {
+            setPageLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
@@ -106,24 +127,24 @@ const Theme = () => {
             </div>
 
             {pageLoading ? <Loader tab="theme"/> : (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     {templates.map((tpl: any) => (
                         <div 
                             key={tpl.templateId} 
                             className={`p-4 border rounded-lg shadow-sm transition-all ${
                                 activeId === tpl.templateId ? 'border-green-500 border-2 bg-green-50' : 'border-gray-200 bg-white'
                             }`}
-                        >
+                        >                            
                             {/* Theme Name */}
                             <h3 className="font-bold text-lg mb-2 capitalize">{tpl.themeName}</h3>
                             
                             {/* Image Preview */}
-                            <div className="w-full h-32 mb-3 overflow-hidden rounded-md border border-gray-100">
+                            <div className="relative w-full lg:h-[300px] mb-3 overflow-hidden rounded-md border border-gray-100">
                                 {tpl.bannerImg ? (
                                     <img 
                                         src={tpl.bannerImg} 
                                         alt={tpl.themeName} 
-                                        className="w-full h-full object-cover object-center"
+                                        className="w-full h-full object-center transition-transform duration-300 hover:scale-105"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
@@ -153,6 +174,14 @@ const Theme = () => {
                             >
                                 {activeId === tpl.templateId ? "Currently Live" : "Select & Publish"}
                             </button>
+                            
+                            <button
+                                onClick={() => handleDelete(tpl)}
+                                className="w-full py-2 rounded-lg font-semibold py-2 mt-3 py-1 bg-red-500 text-white rounded"
+                            >
+                                Delete
+                            </button>
+                            
                         </div>
                     ))}
                 </div>

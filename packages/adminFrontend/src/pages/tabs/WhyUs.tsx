@@ -78,15 +78,17 @@ const WhyUs = () => {
             </div>
 
             {pageLoading ? <Loader tab="whyus" /> : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {items?.map((item) => (
                         <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
                             <div className="p-4 flex-grow">
-                                <img 
-                                    src={item.imageUrl} 
-                                    alt={item.title} 
-                                    className="w-full h-40 object-cover rounded-lg mb-4" 
-                                />
+                                <div className="relative w-full lg:h-[300px] mb-3 overflow-hidden rounded-md border border-gray-100">
+                                    <img 
+                                        src={item.imageUrl} 
+                                        alt={item.title} 
+                                        className="absolute inset-0 w-full h-full object-cove object-center"
+                                    />
+                                </div>
                                 <h4 className="font-bold text-lg text-gray-800">{item.title}</h4>
                                 <p className="text-gray-600 text-sm mt-1">{item.description}</p>
                             </div>

@@ -72,7 +72,7 @@ const rolePermissions = {
 
     // ====== theme ======
     { path: "/theme/templates", methods: ["POST", "GET"] },
-    // { path: "/theme/active", methods: ["GET"] },
+    { path: "/theme/templates/{id}", methods: ["DELETE"] },
     { path: "/theme/active/update", methods: ["POST", "GET"] },
 
     // ====== why us =======

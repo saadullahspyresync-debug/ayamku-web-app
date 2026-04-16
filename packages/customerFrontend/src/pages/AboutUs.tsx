@@ -1,19 +1,22 @@
-import React from "react";
+import { useTheme } from "@/contexts/ThemeProvider";
 import { useTranslation } from "react-i18next"; // ✅ import translation hook
 
 const AboutUs = () => {
   const { t } = useTranslation(); // ✅ initialize translation
+  const { theme } = useTheme();
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Banner */}
-      <div className="relative h-full mx-[10px] sm:mx-[50px] my-[10px] sm:my-[50px] rounded-[12px] overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-        <img
-          src="/assets/images/conatct-us-banner.png"
-          alt="Contact Banner"
-          className="w-full h-80 object-cover"
-        />
+      <div className="mx-[10px] sm:mx-[50px] my-[10px] sm:my-[50px] rounded-[12px] overflow-hidden">
+        <div className="relative w-full h-40 sm:h-60 md:h-[400px] lg:h-[600px]">
+          <img
+            src={theme?.bannerImg ?? "/assets/images/conatct-us-banner.png"}
+            alt="Contact Banner"
+            className="absolute inset-0 w-full h-full object-center"
+          />
+          <div className="absolute inset-0 bg-black/10" />
+        </div>
       </div>
 
       <div className="container mx-auto sm:px-6 sm:py-6 px-4 py-4">

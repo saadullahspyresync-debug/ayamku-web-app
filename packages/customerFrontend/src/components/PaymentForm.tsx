@@ -49,7 +49,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const { user } = useAuth();
   const { items, typeOfOrder, arrivalTime, specialInstruction } = useCartStore();
   const branchId = useBranchStore.getState().selectedBranch?.branchId;
-  
   const handleSecurePayment = async () => {
     try {
       setLoading(true);
@@ -59,6 +58,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const checkoutPayload = {
         cartItems: items.map((item) => ({
           itemId: item.itemId,
+          name: item.name,
+          price: item.price,
           quantity: item.quantity,
         })),
         orderMetadata: {

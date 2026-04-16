@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
                   to="/contact"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {footerData ? `footerData.quickLinks?.contactUs` : t("footer.contact_us")}
+                  {footerData ? footerData.quickLinks?.contactUs : t("footer.contact_us")}
                 </Link>
               </li>
               <li>

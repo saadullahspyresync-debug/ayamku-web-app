@@ -27,7 +27,7 @@ export interface Order {
   paymentStatus: 'pending' | 'paid' | 'failed';
   orderDate: string;
   deliveryAddress?: string;
-  notes?: string;
+  specialInstructions?: string;
   createdAt: string;
   updatedAt: string;
   user: any;
