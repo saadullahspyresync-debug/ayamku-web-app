@@ -8,17 +8,11 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 import { Resource } from "sst";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-
 import { sendOrderConfirmation } from "../email/emailService";
 
 const ORDERS_TABLE = Resource.Order.name;
-const ITEMS_TABLE = Resource.Item.name;
+const POINTS_CONFIG_TABLE = Resource.PointsConfig.name;
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const sns = new SNSClient({});
-
-// Get SNS Topic ARN from environment or Resource
-const EMAIL_TOPIC_ARN = process.env.EMAIL_TOPIC_ARN || "";
 
 const sendResponse = (status: number, message: string, data?: any) => ({
   statusCode: status,
@@ -119,7 +113,7 @@ async function processRedemptions(order: any) {
 // packages/functions/src/order/create.ts - Add points earning logic
 // Add this to your existing order creation handler
 
-async function awardPointsForOrder(
+export async function awardPointsForOrder(
   userId: string,
   orderTotal: number,
   orderId: string
@@ -128,7 +122,7 @@ async function awardPointsForOrder(
     // Get points config
     const configResult = await dynamoDb.send(
       new GetCommand({
-        TableName: Resource.PointsConfig.name,
+        TableName: POINTS_CONFIG_TABLE,
         Key: { configId: "default" },
       })
     );
@@ -222,7 +216,7 @@ export async function finalizeAndProcessOrder(orderId: string, transactionId: st
     await processRedemptions(order);
   }
 
-  if (order.userId && order.userId !== "guest") {
+  if (order.userId) {
     await awardPointsForOrder(order.userId, order.totalPrice, orderId);
   }
 
@@ -253,6 +247,3 @@ export async function finalizeAndProcessOrder(orderId: string, transactionId: st
   }
   return order;
 }
-
-// Export for use in order creation
-export { awardPointsForOrder };

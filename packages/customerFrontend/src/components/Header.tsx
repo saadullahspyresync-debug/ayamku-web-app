@@ -10,12 +10,14 @@ import { Input } from "./ui/input";
 import LanguageSelector from "./LanguageSelector";
 import ProfileModal from "./ProfileModal";
 import PointsBadge from "./PointsBadge";
+import { fetchFooterData, FooterSettings } from "@/services/api";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [footerData, setFooterData] = useState<FooterSettings | null>(null);
 
   // ✅ replaced old auth store with new context
   const { isAuthenticated, user, logout } = useAuth();
@@ -30,6 +32,19 @@ const Header: React.FC = () => {
     setIsMenuOpen(false);
   };
   const totalCartItems = getTotalItems();
+
+  useEffect(() => {
+    const getFooter = async () => {
+      try {
+        const data = await fetchFooterData();
+        setFooterData(data);
+      } catch (error) {
+        console.error("Failed to load footer data:", error);
+      }
+    };
+
+    getFooter();
+  }, []);
 
   return (
     <>
@@ -190,7 +205,7 @@ const Header: React.FC = () => {
                 className="flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("explore_menu.title")}
+                {footerData ? footerData.quickLinks?.exploreMenu : t("explore_menu")}
               </Link>
 
               <Link
@@ -198,7 +213,7 @@ const Header: React.FC = () => {
                 className="flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("restaurant_locator")}
+                {footerData ? footerData.quickLinks?.restaurantLocator : t("restaurant_locator")}
               </Link>
 
               <Link
@@ -206,7 +221,7 @@ const Header: React.FC = () => {
                 className="flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("about_us.title")}
+                {footerData ? footerData.quickLinks?.aboutUs : t("about_us")}
               </Link>
 
               <Link
@@ -214,7 +229,7 @@ const Header: React.FC = () => {
                 className="flex items-center py-3 px-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t("contact_us")}
+                {footerData ? footerData.quickLinks?.contactUs : t("contact_us")}
               </Link>
 
               <Link

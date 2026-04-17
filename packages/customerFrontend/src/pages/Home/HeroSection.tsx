@@ -17,9 +17,14 @@ const HeroSlider = ({ t, navigate, sliders }) => {
   };
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 5000);
+    if (sliders.length <= 1) return;
+
+    const timer = setInterval(() => {
+      nextSlide();
+    }, 5000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [sliders.length]);
 
   return (
     <section className="relative w-full overflow-hidden
@@ -89,26 +94,30 @@ const HeroSlider = ({ t, navigate, sliders }) => {
       </div>
 
       {/* Navigation Arrows — smaller on mobile */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2
-          bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
-          transition-all duration-300 z-10
-          p-1.5 sm:p-2 md:p-3"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2
-          bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
-          transition-all duration-300 z-10
-          p-1.5 sm:p-2 md:p-3"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-      </button>
+      {sliders.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2
+              bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
+              transition-all duration-300 z-10
+              p-1.5 sm:p-2 md:p-3"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2
+              bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full
+              transition-all duration-300 z-10
+              p-1.5 sm:p-2 md:p-3"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+          </button>
+        </>
+      )}
 
       {/* Dots Navigation — tighter on mobile */}
       <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 z-10">

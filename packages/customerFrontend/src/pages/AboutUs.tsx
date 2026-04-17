@@ -9,7 +9,7 @@ const AboutUs = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Banner */}
       <div className="mx-[10px] sm:mx-[50px] my-[10px] sm:my-[50px] rounded-[12px] overflow-hidden">
-        <div className="relative w-full h-40 sm:h-60 md:h-[400px] lg:h-[600px]">
+        <div className="relative w-full h-40 sm:h-60 md:h-[400px] lg:h-[600px] xl:h-[700px]">
           <img
             src={theme?.bannerImg ?? "/assets/images/conatct-us-banner.png"}
             alt="Contact Banner"

@@ -15,7 +15,7 @@ const PointsBadge: React.FC = () => {
     if (isAuthenticated) {
       fetchPoints();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, points]);
 
   const fetchPoints = async () => {
     try {

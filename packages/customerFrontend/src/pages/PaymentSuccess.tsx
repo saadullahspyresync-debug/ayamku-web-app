@@ -141,37 +141,52 @@ const PaymentSuccess = () => {
           )}
 
           {/* Transaction Details */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">Transaction Details</h3>
+          <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mb-6 text-left">
+            <h3 className="text-center text-sm font-semibold text-gray-700 mb-4">Transaction Details</h3>
             <div className="space-y-3">
+
               {paymentData?.transactionId && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Transaction ID:</span>
-                  <span className="text-sm font-mono text-gray-800 bg-white px-2 py-1 rounded">{paymentData.transactionId}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                  <span className="text-sm text-gray-600 shrink-0">Transaction ID:</span>
+                  <span className="text-sm font-mono text-gray-800 bg-white px-2 py-1 rounded break-all sm:text-right">
+                    {paymentData.transactionId}
+                  </span>
                 </div>
               )}
+
               {paymentData?.referenceNumber && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Order ID:</span>
-                  <span className="text-sm font-mono text-gray-800 bg-white px-2 py-1 rounded">{paymentData.referenceNumber}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                  <span className="text-sm text-gray-600 shrink-0">Order ID:</span>
+                  <span className="text-sm font-mono text-gray-800 bg-white px-2 py-1 rounded break-all sm:text-right">
+                    {paymentData.referenceNumber.toUpperCase().slice(7, )}
+                  </span>
                 </div>
               )}
+
               {paymentData?.totalPrice && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Amount:</span>
-                  <span className="text-sm font-semibold text-gray-800">{paymentData.currency} {paymentData.totalPrice}</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-sm text-gray-600 shrink-0">Amount:</span>
+                  <span className="text-sm font-semibold text-gray-800 text-right px-2">
+                    {paymentData.currency} {paymentData.totalPrice}
+                  </span>
                 </div>
               )}
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Status:</span>
+
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-sm text-gray-600 shrink-0">Status:</span>
                 <span
-                  className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                    isSuccess ? "bg-green-100 text-green-700" : isDeclined ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"
+                  className={`text-sm font-semibold px-2 py-1 rounded-full text-right ${
+                    isSuccess
+                      ? "bg-green-100 text-green-700"
+                      : isDeclined
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
                   {paymentData?.decision}
                 </span>
               </div>
+
             </div>
           </div>
 

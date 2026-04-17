@@ -92,7 +92,7 @@ export function ApiStack(
       APP_FRONTEND_URL: cs.frontend_url,
       API_BASE_URL: cs.api_base_url,
     },
-    link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.order, storage.tables.item],
+    link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.order, storage.tables.item, storage.tables.pointsConfig, storage.tables.user, storage.tables.pointsTransaction, storage.tables.redeemableItem, storage.tables.redemptionHistory],
     ...defaultFunctionProps,
   });
 
@@ -120,7 +120,7 @@ export function ApiStack(
         APP_FRONTEND_URL: cs.frontend_url,
         API_BASE_URL: cs.api_base_url,
       },
-      link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.item, storage.tables.order],
+      link: [CYBERSOURCE_ACCESS_KEY, CYBERSOURCE_MERCHANT_ID, CYBERSOURCE_SECRET_KEY, EMAIL_PASS, storage.tables.item, storage.tables.order, storage.tables.pointsConfig, storage.tables.user, storage.tables.pointsTransaction, storage.tables.redeemableItem, storage.tables.redemptionHistory],
 
       ...defaultFunctionProps,
     },

@@ -43,7 +43,7 @@ export default function OrderDetailsModal({
       cancelled: "text-red-600 bg-red-50",
     };
     return colors[status] || "text-gray-600 bg-gray-50";
-  };//console.log(order)
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

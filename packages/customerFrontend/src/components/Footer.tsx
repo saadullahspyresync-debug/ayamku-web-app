@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
                   to="/menu"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {footerData ? footerData.quickLinks?.exploreMenu : t("footer.explore_menu")}
+                  {footerData ? footerData.quickLinks?.exploreMenu : t("explore_menu")}
                 </Link>
               </li>
               <li>
@@ -57,7 +57,7 @@ const Footer: React.FC = () => {
                   to="/restaurant-locator"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {footerData ? footerData.quickLinks?.restaurantLocator : t("footer.restaurant_locator")}
+                  {footerData ? footerData.quickLinks?.restaurantLocator : t("restaurant_locator")}
                 </Link>
               </li>
               <li>
@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
                   to="/contact"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {footerData ? footerData.quickLinks?.contactUs : t("footer.contact_us")}
+                  {footerData ? footerData.quickLinks?.contactUs : t("contact_us")}
                 </Link>
               </li>
               <li>
@@ -73,7 +73,7 @@ const Footer: React.FC = () => {
                   to="/about"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {footerData ? footerData.quickLinks?.aboutUs : t("footer.about_us")}
+                  {footerData ? footerData.quickLinks?.aboutUs : t("about_us")}
                 </Link>
               </li>
             </ul>
