@@ -60,6 +60,7 @@ export const getAllOrders = async (params?: {
   pageSize?: number;
   status?: string;
   branchId?: string;
+  orderId?: string;
 }): Promise<OrdersResponse> => {
   const response = await api.get('/admin/orders', { params });
   return response.data.data;

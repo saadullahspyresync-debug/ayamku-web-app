@@ -229,9 +229,9 @@ export default function PromotionsTab() {
                     </div>
                   )}
 
-                  {p.items?.length > 0 && (
+                  {p.itemNames?.length > 0 && (
                     <div className="text-xs text-gray-500 mt-1">
-                      Items: {p.items.map((i: any) => i.name || i).join(", ")}
+                      Items: {p.itemNames.join(", ")}
                     </div>
                   )}
                 </div>

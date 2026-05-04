@@ -263,12 +263,12 @@ const BestFoodSlider: React.FC<BestFoodSliderProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-full">
+                    {/* <div className="flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-full">
                       <Star className="w-4 h-4 text-ayamku-primary fill-ayamku-primary" />
                       <span className="text-sm font-semibold text-ayamku-primary">
                         {item?.loyaltyPoints}
                       </span>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Category Badge */}

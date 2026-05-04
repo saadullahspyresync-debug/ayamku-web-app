@@ -2,7 +2,6 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  QueryCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { 
@@ -14,6 +13,7 @@ import { Resource } from "sst";
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const TABLE = Resource.BranchManager.name;
 const cognito = new CognitoIdentityProviderClient({});
+const USER_POOL_ID = Resource.UserPool.id;
 
 const sendResponse = (status: number, body: any) => ({
   statusCode: status,
@@ -54,6 +54,21 @@ export const main = async (event: APIGatewayProxyEvent) => {
           ":branchId": branchId,
           ":updatedAt": Date.now(),
         },
+      })
+    );
+
+    /* ================= 2. UPDATE COGNITO ================= */
+    // 'userId' here must be the Cognito 'Username' (usually the sub UUID)
+    await cognito.send(
+      new AdminUpdateUserAttributesCommand({
+        UserPoolId: USER_POOL_ID,
+        Username: userId, 
+        UserAttributes: [
+          {
+            Name: "custom:branchId", // Verify prefix in Cognito Console
+            Value: branchId.toString(),
+          },
+        ],
       })
     );
 

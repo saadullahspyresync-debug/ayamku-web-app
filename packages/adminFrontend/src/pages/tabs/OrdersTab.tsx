@@ -31,6 +31,7 @@ export default function OrdersTab() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [branchFilter, setBranchFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,7 +65,7 @@ export default function OrdersTab() {
         pageSize,
       };
 
-      if (statusFilter !== "all") {
+      if (isAdmin && statusFilter !== "all") {
         params.status = statusFilter;
       }
 
@@ -72,10 +73,19 @@ export default function OrdersTab() {
         params.branchId = branchFilter;
       }
 
-
+      if (debouncedSearch) {
+        params.orderId = debouncedSearch.startsWith("ORDER-") 
+          ? debouncedSearch 
+          : `ORDER-${debouncedSearch}`;
+      }
       const response = await getAllOrders(params);
 
-      setOrders(response.orders.filter((order) => order.status === "completed"));
+      if(isAdmin) {
+        setOrders(response.orders);
+      } else {
+        setOrders(response.orders.filter((order) => order.status === "completed"));
+      }
+
       setTotalOrders(response.total);
     } catch (error) {
       toast.error("Failed to load orders");
@@ -107,7 +117,18 @@ export default function OrdersTab() {
     if (isAdmin) {
       fetchBranches();
     }
-  }, [currentPage, statusFilter, branchFilter, isAdmin]);
+  }, [currentPage, statusFilter, branchFilter, isAdmin, debouncedSearch]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to page 1 when searching
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(handler); // Clear timeout if user types again before 500ms
+    };
+}, [searchQuery]);
 
 
   // Handle view order details
@@ -200,7 +221,7 @@ export default function OrdersTab() {
             Order Management
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Total Orders: {totalOrders}
+            Total Orders: {isAdmin ? totalOrders : stats.completedOrders}
           </p>
         </div>
 

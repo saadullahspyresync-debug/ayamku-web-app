@@ -343,7 +343,7 @@ export function ApiStack(
   api.route("GET /promotions", {
     handler: "packages/functions/src/promotion/getAll.main",
     name: `${$app.name}-${$app.stage}-Get-All-Promotions`,
-    link: [storage.tables.promotion],
+    link: [storage.tables.promotion, storage.tables.item],
     ...defaultFunctionProps,
   });
 
@@ -847,7 +847,13 @@ export function ApiStack(
     {
       handler: "packages/functions/src/branchManager/update.main",
       name: `${$app.name}-${$app.stage}-Update-Branch-Manager`,
-      link: [storage.tables.branchManager],
+      link: [storage.tables.branchManager, AuthResources.userPool],
+      permissions: [
+        {
+          actions: ["cognito-idp:AdminUpdateUserAttributes"],
+          resources: [AuthResources.userPool.arn],
+        },
+      ],
       ...defaultFunctionProps,
     },
     protectedRouteConfig

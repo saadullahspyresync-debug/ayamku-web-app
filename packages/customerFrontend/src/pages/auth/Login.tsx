@@ -22,7 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, refreshUser, user } = useAuth();
+  const { login, isAuthenticated, refreshUser, user, logout } = useAuth();
 
   const {
     register,
@@ -38,34 +38,36 @@ const Login: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data.email, data.password);
-
-
       await refreshUser();
-
+      
       // ✅ Get the latest user data
-    const currentUser = await getCurrentUser();
-    const session = await fetchAuthSession();
-    const idToken = session.tokens?.idToken?.payload;
+      const currentUser = await getCurrentUser();
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken?.payload;
 
-    
+      const groups = (idToken?.["cognito:groups"] as string[]) || [];
+      const isCustomer = groups.some(
+        group => group.toLowerCase() === "customer"
+      );
 
-    // ✅ Call your backend sync API
-    await syncUser(idToken);
+      if (isCustomer) {
+        await syncUser(idToken);
+        
+        toast({
+          title: "Welcome back!",
+          description: "You have been successfully logged in.",
+        });
+        
+        navigate("/");
+      } else {
+        await logout();
+        toast({
+          title: "Access Denied",
+          description: "This portal is for customers only.",
+        });
 
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
-      });
-
-      navigate("/");
-      // if (result.role === "Admin") {
-      // window.location.href = "http://localhost:5173/admin-dashboard";
-      // } else {
-      // window.location.href = "http://localhost:5173/";
-      // }
+      }
     } catch (err) {
-      console.error("Login error:", err);
-
       // Handle the specific case where user needs to verify email
       if (err.message === "CONFIRM_SIGN_UP_REQUIRED") {
         // Redirect to verification page with email
@@ -73,7 +75,6 @@ const Login: React.FC = () => {
           state: { email: data.email },
         });
       }
-      // Other errors are already handled by toasts in AuthContext
     }
   };
 

@@ -75,6 +75,7 @@ export default function MenuTab() {
     if (tab === "deals") {
       fetchDeals();
       fetchItems();
+      fetchBranches();
     }
   }, [tab]);
 

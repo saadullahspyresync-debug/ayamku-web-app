@@ -38,6 +38,7 @@ export const main = async (event: any) => {
     const pageSize = parseInt(event.queryStringParameters?.pageSize || "10");
     const statusFilter = event.queryStringParameters?.status;
     const branchIdFilter = event.queryStringParameters?.branchId;
+    const orderIdFilter = event.queryStringParameters?.orderId;
 
     /* ================= BRANCH RESTRICTION ================= */
     let enforcedBranchId: string | null = null;
@@ -66,15 +67,19 @@ export const main = async (event: any) => {
 
     /* ================= FETCH ORDERS ================= */
     let orders: any[] = [];
-    let ExclusiveStartKey: any = undefined;
+    // let ExclusiveStartKey: any = undefined;
 
-    do {
-      const data = await dynamoDb.send(
-        new ScanCommand({ TableName: TABLE, ExclusiveStartKey })
+    // do {
+    //   const data = await dynamoDb.send(
+    //     new ScanCommand({ TableName: TABLE, ExclusiveStartKey })
+    //   );
+    //   orders = orders.concat(data.Items || []);
+    //   ExclusiveStartKey = data.LastEvaluatedKey;
+    // } while (ExclusiveStartKey);
+    const data = await dynamoDb.send(
+        new ScanCommand({ TableName: TABLE, })
       );
-      orders = orders.concat(data.Items || []);
-      ExclusiveStartKey = data.LastEvaluatedKey;
-    } while (ExclusiveStartKey);
+    orders = orders.concat(data.Items || []);
 
     /* ================= FILTERING ================= */
     if (statusFilter) {
@@ -83,6 +88,10 @@ export const main = async (event: any) => {
 
     if (branchIdFilter) {
       orders = orders.filter((order) => order.branchId === branchIdFilter);
+    }
+
+    if(orderIdFilter){
+      orders = orders.filter((o) => o.orderId.toLowerCase().includes(orderIdFilter.toLowerCase()));
     }
 
     // 🔒 Enforced branch filter
@@ -133,7 +142,6 @@ export const main = async (event: any) => {
       total: populatedOrders.length,
     });
   } catch (error) {
-    console.error("Error fetching orders:", error);
     return sendResponse(500, "Error fetching orders", { error: String(error) });
   }
 };

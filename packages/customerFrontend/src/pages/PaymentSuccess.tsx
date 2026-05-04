@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cartStore";
 import { toast } from "sonner";
 import { getOrderById } from "@/services/api";
 import { URLSearchParams } from "url";
+import { da } from "zod/v4/locales";
 
 type PaymentData = {
   decision: string,
@@ -39,26 +40,43 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     const checkStatus = async () => {
-      if (hasRun.current) return;
-      hasRun.current = true;
-
+      // if (hasRun.current) return;
+      // hasRun.current = true;
+      
       const decision = searchParams.get("decision");
       const orderId = searchParams.get("orderId");
       if (!orderId) return;
+      
+      const savedDataRaw = sessionStorage.getItem("lastPaymentResult");
+      if (savedDataRaw) {
+        const savedData = JSON.parse(savedDataRaw);
+        if (savedData.referenceNumber === orderId) {
+          setPaymentData(savedData);
+          setOrderCreated(true);
+          setLoading(false);
+          return;
+        } else {
+          // If IDs don't match, the user started a new order flow
+          sessionStorage.removeItem("lastPaymentResult");
+        }
+      }
 
       try {
         // 1. Ask your backend for the order status
         const order = await getOrderById(orderId);
 
-        if (order.status === "completed" || order.status === "Completed") {
+        if (order.status?.toLowerCase() === "completed") {
           setOrderCreated(true);
-          setPaymentData({
+          const data = {
             decision: decision,
             transactionId: order.transactionId,
             referenceNumber: order.orderId,
             totalPrice: order.totalPrice ? order.totalPrice.toString() : "0.00",
             currency: order.currency,
-          });
+          };
+          setPaymentData(data);
+
+          sessionStorage.setItem("lastPaymentResult", JSON.stringify(data));
 
           // 2. Clear UI state
           clearCart();
@@ -86,7 +104,14 @@ const PaymentSuccess = () => {
     };
 
     checkStatus();
-  }, [searchParams]);
+    
+  }, [searchParams, clearCart]);
+
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("lastPaymentResult");
+    };
+  }, []);
 
   if (loading) {
     return (

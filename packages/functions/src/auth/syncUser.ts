@@ -6,7 +6,6 @@ const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 
 export const main = async (event: any) => {
-  console.log("🟢 Incoming /auth/syncUser event:", event);
 
   try {
     const body = JSON.parse(event.body || "{}");
@@ -53,7 +52,7 @@ export const main = async (event: any) => {
       })
     );
 
-    console.log("✅ User saved to DynamoDB:", userItem);
+    // console.log("✅ User saved to DynamoDB:");
 
     return {
       statusCode: 200,
